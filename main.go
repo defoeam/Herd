@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"github.com/defoeam/kvs/keyvaluestore"
+	"github.com/defoeam/kvs/kv"
 )
 
 // HandleSet handles the HTTP endpoint for setting key-value pairs.
