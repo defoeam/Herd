@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"github.com/defoeam/kvs/kv"
 	"log"
+	"net/http"
+	"time"
 )
 
 // HandleSet handles the HTTP endpoint for setting key-value pairs.
@@ -48,7 +49,7 @@ func HandleGet(kv *keyvaluestore.KeyValueStore) http.HandlerFunc {
 		}{Key: key, Value: val}
 
 		w.Header().Set("Content-Type", "application/json")
-		
+
 		err := json.NewEncoder(w).Encode(resp)
 		if err != nil {
 			http.Error(w, "Failed to json encode", http.StatusInternalServerError)
@@ -63,12 +64,21 @@ func main() {
 	// Set up HTTP handlers
 	http.HandleFunc("/set", HandleSet(kv))
 	http.HandleFunc("/get", HandleGet(kv))
+
 	// Start the HTTP server.
 	port := 8080
 	addr := fmt.Sprintf(":%d", port)
+	server := &http.Server{
+		Addr:           addr,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+
 	log.Printf("Starting key-value store on http://localhost%s\n", addr)
-	err := http.ListenAndServe(addr, nil)
+
+	err := server.ListenAndServe()
 	if err != nil {
-		log.Printf("Error: %s\n", err)
+		log.Fatal("Error: %s\n", err)
 	}
 }
