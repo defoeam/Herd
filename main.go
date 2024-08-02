@@ -79,6 +79,6 @@ func main() {
 
 	err := server.ListenAndServe()
 	if err != nil {
-		log.Fatal("Error: %s\n", err)
+		log.Fatalf("Error: %s\n", err)
 	}
 }
