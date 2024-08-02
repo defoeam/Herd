@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"github.com/defoeam/kvs/kv"
+	"log"
 )
 
 // HandleSet handles the HTTP endpoint for setting key-value pairs.
@@ -65,9 +66,9 @@ func main() {
 	// Start the HTTP server.
 	port := 8080
 	addr := fmt.Sprintf(":%d", port)
-	fmt.Printf("Starting key-value store on http://localhost%s\n", addr)
+	log.Printf("Starting key-value store on http://localhost%s\n", addr)
 	err := http.ListenAndServe(addr, nil)
 	if err != nil {
-		fmt.Printf("Error: %s\n", err)
+		log.Printf("Error: %s\n", err)
 	}
 }
