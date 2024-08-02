@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	?
+	"github.com/defoeam/kvs/keyvaluestore"
 )
 
 // HandleSet handles the HTTP endpoint for setting key-value pairs.
@@ -53,15 +53,15 @@ func HandleGet(kv *keyvaluestore.KeyValueStore) http.HandlerFunc {
 
 func main() {
 	// Create a new instance of KeyValueStore
-	kv := keyvaluestore.KeyValueStore()
+	kv := keyvaluestore.NewKeyValueStore()
 	// Set up HTTP handlers
-	http.HandlerFunc("/set", HandleSet(kv))
-	http.HandlerFunc("/get", HandleGet(kv))
+	http.HandleFunc("/set", HandleSet(kv))
+	http.HandleFunc("/get", HandleGet(kv))
 	// Start the HTTP server
 	port := 8080
 	addr := fmt.Sprintf(":%d", port)
 	fmt.Printf("Starting key-value store on http://localhost%s\n", addr)
-	err := http.ListenAndServe(addr, null)
+	err := http.ListenAndServe(addr, nil)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 	}
