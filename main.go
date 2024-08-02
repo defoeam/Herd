@@ -47,7 +47,12 @@ func HandleGet(kv *keyvaluestore.KeyValueStore) http.HandlerFunc {
 		}{Key: key, Value: val}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resp)
+		
+		err := json.NewEncoder(w).Encode(resp)
+		if err != nil {
+			http.Error(w, "Failed to json encode", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
