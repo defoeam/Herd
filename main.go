@@ -68,11 +68,12 @@ func main() {
 	// Start the HTTP server.
 	port := 8080
 	addr := fmt.Sprintf(":%d", port)
+	readTimeoutSeconds := 10
+	writeTimeoutSeconds := 10
 	server := &http.Server{
 		Addr:           addr,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+		ReadTimeout:    readTimeoutSeconds * time.Second,
+		WriteTimeout:   writeTimeoutSeconds * time.Second,
 	}
 
 	log.Printf("Starting key-value store on http://localhost%s\n", addr)
