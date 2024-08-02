@@ -1,0 +1,45 @@
+---
+name: Lint & Test
+on:
+  pull_request:
+    branches: [ "*" ]
+
+env:
+    GOVERSION: "1.19"
+
+jobs:
+  golangci:
+    name: Go Lint
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '>=${{ env.GOVERSION }}'
+    - name: Check out code
+      uses: actions/checkout@v4
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v6
+      with:
+        args: --config=golangci.yaml
+        version: latest
+
+  test:
+    name: Go Test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '>=${{ env.GOVERSION }}'
+        check-latest: true
+    - name: Test
+      run: go test -v -race ./...
+
+  conventional-commits:
+    name: Validate Conventional Commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: webiny/action-conventional-commits@v1.3.0
