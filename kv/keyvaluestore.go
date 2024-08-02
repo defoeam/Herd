@@ -3,13 +3,13 @@ import (
 	"sync"
 )
 
-// KeyValueStore represents the key-value store
+// KeyValueStore represents the key-value store.
 type KeyValueStore struct {
 	data map[string]string
 	mu sync.RWMutex
 }
 
-// NewKeyValueStore creates a new instance of KeyValueStore
+// NewKeyValueStore creates a new instance of KeyValueStore.
 func NewKeyValueStore() *KeyValueStore {
 	return &KeyValueStore{
 		data: make(map[string]string),
