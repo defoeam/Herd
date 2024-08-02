@@ -5,7 +5,7 @@ on:
     branches: [ "*" ]
 
 env:
-    GOVERSION: "1.22"
+    GOVERSION: "1.19"
 
 jobs:
   golangci:
