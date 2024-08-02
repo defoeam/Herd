@@ -10,7 +10,7 @@ Enforce TDD
 - [ ] Add linting actions for Go standardization(GitHub workflows)
 - [x] Protect main branch and require pull requests to main
 - [ ] Create a Dockerfile for our REST service
-- [ ] [Initialize our kvs][]
+- [x] [Initialize our kvs][]
 - [ ] Add persistence logic to store on file(instead of a map)
 - [ ] Add transaction logger logic to recover from unreliable interruption(see
   Louis)
