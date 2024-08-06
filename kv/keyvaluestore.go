@@ -1,4 +1,5 @@
 package keyvaluestore
+
 import (
 	"sync"
 )
@@ -6,7 +7,7 @@ import (
 // KeyValueStore represents the key-value store.
 type KeyValueStore struct {
 	data map[string]string
-	mu sync.RWMutex
+	mu   sync.RWMutex
 }
 
 // NewKeyValueStore creates a new instance of KeyValueStore.
