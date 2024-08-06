@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/defoeam/kvs/kv"
 	"log"
 	"net/http"
 	"time"
+
+	keyvaluestore "github.com/defoeam/kvs/kv"
 )
 
 // HandleSet handles the HTTP endpoint for setting key-value pairs.
@@ -65,15 +66,18 @@ func main() {
 	http.HandleFunc("/set", HandleSet(kv))
 	http.HandleFunc("/get", HandleGet(kv))
 
+	// Timeout multiplier, this fixes the magic number linting error
+	timeoutMultiplier := 10
+
 	// Start the HTTP server.
 	port := 8080
 	addr := fmt.Sprintf(":%d", port)
-	readTimeout := 10 * time.Second
-	writeTimeout := 10 * time.Second
+	readTimeout := time.Duration(timeoutMultiplier) * time.Second
+	writeTimeout := time.Duration(timeoutMultiplier) * time.Second
 	server := &http.Server{
-		Addr:           addr,
-		ReadTimeout:    readTimeout,
-		WriteTimeout:   writeTimeout,
+		Addr:         addr,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
 	}
 
 	log.Printf("Starting key-value store on http://localhost%s\n", addr)
