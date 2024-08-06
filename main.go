@@ -82,8 +82,5 @@ func main() {
 
 	log.Printf("Starting key-value store on http://localhost%s\n", addr)
 
-	err := server.ListenAndServe()
-	if err != nil {
-		log.Fatalf("Error: %s\n", err)
-	}
+	log.Fatal(server.ListenAndServe())
 }
