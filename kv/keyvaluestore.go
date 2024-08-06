@@ -18,7 +18,7 @@ func NewKeyValueStore() *KeyValueStore {
 }
 
 // Set adds or updates a key-value pair in the store.
-func (kv *KeyValueStore) Set(key, value string) {
+func (kv *KeyValueStore) Set(key string, value string) {
 	kv.mu.Lock()
 	defer kv.mu.Unlock()
 	kv.data[key] = value
