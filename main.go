@@ -114,5 +114,4 @@ func main() {
 	// Start server
 	log.Printf("Starting key-value store on http://localhost%s\n", addr)
 	log.Fatal(router.Run(addr))
-
 }
