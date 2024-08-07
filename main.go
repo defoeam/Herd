@@ -9,6 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/*
+handleGet returns a gin.HandlerFunc that retrieves the value associated with the provided key from the KeyValueStore.
+If the key is missing or not found, it responds with an appropriate HTTP status and error message.
+
+Example Request:
+
+	GET /get/:key
+
+Example Response:
+
+	{
+	  "key": "exampleKey",
+	  "value": "exampleValue"
+	}
+*/
 func handleGet(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		key := ctx.Param("key")
@@ -37,6 +52,25 @@ func handleGet(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	}
 }
 
+/*
+handleSet returns a gin.HandlerFunc that sets a key-value pair in the KeyValueStore.
+The key and value are provided in the JSON request body. It responds with the created key-value pair.
+
+Example Request:
+
+	POST /set
+	{
+	   "key": "exampleKey",
+	   "value": "exampleValue"
+	}
+
+Example Response:
+
+	{
+	   "key": "exampleKey",
+	   "value": "exampleValue"
+	}
+*/
 func handleSet(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -46,7 +80,7 @@ func handleSet(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 			Value string `json:"value"`
 		}
 
-		// Bind JSON to key/value structure
+		// Bind JSON to key/value request structure
 		err := ctx.BindJSON(&req)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"message": "Failed to bind json, incorrect parameter(s)"})
@@ -79,6 +113,7 @@ func main() {
 	port := 8080
 	addr := fmt.Sprintf(":%d", port)
 
+	// Start server
 	log.Printf("Starting key-value store on http://localhost%s\n", addr)
 	log.Fatal(router.Run(addr))
 

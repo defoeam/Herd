@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.19 AS build-stage
+# --- BUILD STAGE ---
+FROM golang:1.20 AS build-stage
 
 # Set destination for COPY
 WORKDIR /app
@@ -12,12 +13,12 @@ RUN go mod download
 
 # Copy the source code. Note the slash at the end, as explained in
 # https://docs.docker.com/reference/dockerfile/#copy
-COPY *.go ./
+COPY . ./
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux go build -o /kvs
 
-
+# --- DEPLOY STAGE ---
 # Deploy the application binary into a lean image
 FROM gcr.io/distroless/base-debian11 AS build-release-stage
 
