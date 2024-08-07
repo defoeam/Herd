@@ -73,7 +73,6 @@ Example Response:
 */
 func handleSet(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
 		// Define key/value request structure
 		var req struct {
 			Key   string `json:"key"`
@@ -96,7 +95,6 @@ func handleSet(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 }
 
 func main() {
-
 	// Create a new instance of KeyValueStore.
 	kv := keyvaluestore.NewKeyValueStore()
 
