@@ -140,6 +140,13 @@ func handleSet(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	}
 }
 
+func handleClear(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		kv.Clear()
+		ctx.Status(http.StatusNoContent)
+	}
+}
+
 func main() {
 	// Create a new instance of KeyValueStore.
 	kv := keyvaluestore.NewKeyValueStore()
@@ -153,6 +160,7 @@ func main() {
 
 	// POST endpoints
 	router.POST("/set", handleSet(kv))
+	router.POST("/clear", handleClear(kv))
 
 	// Get address
 	port := 8080

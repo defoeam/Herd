@@ -48,3 +48,13 @@ func (kv *KeyValueStore) GetAll() map[string]string {
 
 	return res
 }
+
+func (kv *KeyValueStore) Clear() {
+	kv.mu.Lock()
+	defer kv.mu.Unlock()
+
+	for k := range kv.data {
+		delete(kv.data, k)
+	}
+
+}
