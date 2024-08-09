@@ -42,11 +42,31 @@ func (kv *KeyValueStore) GetAll() map[string]string {
 	kv.mu.RLock()
 	defer kv.mu.RUnlock()
 
-	// log.Printf("size of data is %d\n", len(kv.data))
-	res := maps.Clone(kv.data)
-	// log.Printf("size of res is %d\n", len(res))
+	return maps.Clone(kv.data)
+}
 
-	return res
+func (kv *KeyValueStore) GetKeys() []string {
+	kv.mu.RLock()
+	defer kv.mu.RUnlock()
+
+	keys := make([]string, 0, len(kv.data))
+	for k := range kv.data {
+		keys = append(keys, k)
+	}
+
+	return keys
+}
+
+func (kv *KeyValueStore) GetValues() []string {
+	kv.mu.RLock()
+	defer kv.mu.RUnlock()
+
+	values := make([]string, 0, len(kv.data))
+	for _, v := range kv.data {
+		values = append(values, v)
+	}
+
+	return values
 }
 
 func (kv *KeyValueStore) Clear() {

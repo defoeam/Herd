@@ -147,6 +147,20 @@ func handleClear(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	}
 }
 
+func handleGetKeys(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		keys := kv.GetKeys()
+		ctx.JSON(http.StatusOK, keys)
+	}
+}
+
+func handleGetValues(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		values := kv.GetValues()
+		ctx.JSON(http.StatusOK, values)
+	}
+}
+
 func main() {
 	// Create a new instance of KeyValueStore.
 	kv := keyvaluestore.NewKeyValueStore()
@@ -157,6 +171,8 @@ func main() {
 	// GET endpoints
 	router.GET("/get", handleGetAll(kv))
 	router.GET("/get/:key", handleGet(kv))
+	router.GET("/keys", handleGetKeys(kv))
+	router.GET("/values", handleGetValues(kv))
 
 	// POST endpoints
 	router.POST("/set", handleSet(kv))
