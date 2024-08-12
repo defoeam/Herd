@@ -14,7 +14,7 @@
 - [ ] Write unit tests for key value system
 - [ ] HTTP tests for REST API
 - [x] Write manual developer setup documentation
-- [ ] Setup Microsoft docker dev container for easy developer onboarding
+- [ ] Create Makefile for dev setup 
 
 ### Stretch Opportunities
 - [ ] Add Docker build & test CI
