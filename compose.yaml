@@ -1,0 +1,9 @@
+---
+name: keyvalue
+services:
+  server:
+    container_name: ${CONTAINER_NAME:-server}
+    build:
+      context: .
+    ports:
+    - 8080:8080
