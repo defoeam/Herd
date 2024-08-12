@@ -1,8 +1,5 @@
-# kvs
-
-Golang Kev Value Storage
-
-Enforce TDD
+# kvs - Golang Kev Value Storage
+![keyvalue image](./banner.png)
 
 ## Backlog
 
@@ -17,8 +14,7 @@ Enforce TDD
 - [ ] Add standard dictionary methods to our base key value store and API, see the common python dictionary methods.
 - [ ] Write unit tests for key value system
 - [ ] HTTP tests for REST API
-- [ ] Write manual developer setup documentation
-- [ ] Setup Microsoft docker dev container for easy developer onboarding
+- [ ] Create Makefile for dev setup 
 
 ## Stretch Opportunities
 
