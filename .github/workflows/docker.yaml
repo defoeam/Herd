@@ -13,7 +13,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build & Scan Image
+    name: Build & Push Image
     permissions:
       contents: read
       id-token: write
@@ -54,7 +54,7 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
         # https://github.com/docker/metadata-action
         tags: |
-            type=raw,value=latest,enable=${{ github.head_ref == 'main' }}
+            type=raw,value=latest
             type=sha,prefix=,suffix=,format=long
             type=ref,event=pr
 
