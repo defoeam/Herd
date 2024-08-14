@@ -1,5 +1,6 @@
 
 ![keyvalue image](./banner.png)
+![build](https://img.shields.io/github/actions/workflow/status/defoeam/kvs/lint.yaml)
 
 ## Backlog
 
