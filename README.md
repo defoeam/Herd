@@ -1,4 +1,4 @@
-# kvs - Golang Kev Value Storage
+
 ![keyvalue image](./banner.png)
 
 ## Backlog
