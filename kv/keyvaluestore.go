@@ -76,5 +76,4 @@ func (kv *KeyValueStore) Clear() {
 	for k := range kv.data {
 		delete(kv.data, k)
 	}
-
 }
