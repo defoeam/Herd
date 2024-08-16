@@ -28,7 +28,7 @@ handleGetAll returns a gin.HandlerFunc that retrieves all key-values in the stor
 
 Example request:
 
-	GET /get
+	GET /items
 
 Example response:
 
@@ -67,7 +67,7 @@ If the key is missing or not found, it responds with an appropriate HTTP status 
 
 Example Request:
 
-	GET /get/:key
+	GET /items/:key
 
 Example Response:
 
@@ -107,7 +107,7 @@ The key and value are provided in the JSON request body. It responds with the cr
 
 Example Request:
 
-	POST /set
+	POST /items
 	{
 	   "key": "exampleKey",
 	   "value": "exampleValue"
@@ -140,12 +140,28 @@ func handleSet(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	}
 }
 
+// handleClear removes all items from the store.
 func handleClear(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		kv.Clear()
 		ctx.Status(http.StatusNoContent)
 	}
 }
+
+/*
+handleGetKeys gets all keys from the store.
+
+Example Request:
+
+	GET /keys
+
+Example Response:
+
+	[
+		"exampleKey1",
+		"exampleKey2"
+	]
+*/
 
 func handleGetKeys(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -154,6 +170,20 @@ func handleGetKeys(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	}
 }
 
+/*
+handleGetValues returns all values from the store.
+
+Example Request:
+
+	GET /values
+
+Example Response:
+
+	[
+		"exampleValue1",
+		"exampleValue2"
+	]
+*/
 func handleGetValues(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		values := kv.GetValues()
@@ -169,14 +199,16 @@ func main() {
 	router := gin.Default()
 
 	// GET endpoints
-	router.GET("/get", handleGetAll(kv))
-	router.GET("/get/:key", handleGet(kv))
+	router.GET("/items", handleGetAll(kv))
+	router.GET("/items/:key", handleGet(kv))
 	router.GET("/keys", handleGetKeys(kv))
 	router.GET("/values", handleGetValues(kv))
 
 	// POST endpoints
-	router.POST("/set", handleSet(kv))
-	router.POST("/clear", handleClear(kv))
+	router.POST("/items", handleSet(kv))
+
+	// DELETE endpoints
+	router.DELETE("/items", handleClear(kv))
 
 	// Get address
 	port := 8080
