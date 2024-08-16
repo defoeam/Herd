@@ -19,6 +19,20 @@ func NewKeyValueStore() *KeyValueStore {
 	}
 }
 
+type KeyValue struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+func NewKeyValue(key string, value string) *KeyValue {
+	kv := KeyValue{
+		Key:   key,
+		Value: value,
+	}
+
+	return &kv
+}
+
 // Set adds or updates a key-value pair in the store.
 func (kv *KeyValueStore) Set(key string, value string) {
 	kv.mu.Lock()
@@ -45,6 +59,7 @@ func (kv *KeyValueStore) GetAll() map[string]string {
 	return maps.Clone(kv.data)
 }
 
+// GetKeys returns all keys from the store.
 func (kv *KeyValueStore) GetKeys() []string {
 	kv.mu.RLock()
 	defer kv.mu.RUnlock()
@@ -57,6 +72,7 @@ func (kv *KeyValueStore) GetKeys() []string {
 	return keys
 }
 
+// GetValues returns all values from the store.
 func (kv *KeyValueStore) GetValues() []string {
 	kv.mu.RLock()
 	defer kv.mu.RUnlock()
@@ -69,11 +85,23 @@ func (kv *KeyValueStore) GetValues() []string {
 	return values
 }
 
-func (kv *KeyValueStore) Clear() {
+// Clears all key/value pairs from the store.
+func (kv *KeyValueStore) ClearAll() {
 	kv.mu.Lock()
 	defer kv.mu.Unlock()
 
 	for k := range kv.data {
 		delete(kv.data, k)
 	}
+}
+
+// Clears a specific key value pair from the store.
+func (kv *KeyValueStore) Clear(key string) (string, bool) {
+	kv.mu.Lock()
+	defer kv.mu.Unlock()
+
+	deletedVal, ok := kv.data[key]
+	delete(kv.data, key)
+
+	return deletedVal, ok
 }
