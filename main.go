@@ -9,20 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type KeyValue struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
-}
-
-func newKeyValue(key string, value string) *KeyValue {
-	kv := KeyValue{
-		Key:   key,
-		Value: value,
-	}
-
-	return &kv
-}
-
 /*
 handleGetAll returns a gin.HandlerFunc that retrieves all key-values in the store.
 
@@ -49,11 +35,11 @@ func handleGetAll(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 		data := kv.GetAll()
 
 		// Build the response.
-		var res []KeyValue
-		res = make([]KeyValue, 0)
+		var res []keyvaluestore.KeyValue
+		res = make([]keyvaluestore.KeyValue, 0)
 
 		for k, v := range data {
-			res = append(res, *newKeyValue(k, v))
+			res = append(res, *keyvaluestore.NewKeyValue(k, v))
 		}
 
 		// Serialize response
@@ -94,7 +80,7 @@ func handleGet(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 		}
 
 		// Build response
-		res := newKeyValue(key, val)
+		res := keyvaluestore.NewKeyValue(key, val)
 
 		// Serialize response
 		ctx.JSON(http.StatusAccepted, res)
@@ -123,7 +109,7 @@ Example Response:
 func handleSet(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// Define key/value request structure
-		var req KeyValue
+		var req keyvaluestore.KeyValue
 
 		// Bind JSON to key/value request structure
 		err := ctx.BindJSON(&req)
@@ -140,11 +126,37 @@ func handleSet(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	}
 }
 
-// handleClear removes all items from the store.
+// handleClearAll removes all items from the store.
+func handleClearAll(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		kv.ClearAll()
+		ctx.Status(http.StatusNoContent)
+	}
+}
+
+// handleClear removes an item from the store and returns a copy of the deleted key/value pair
 func handleClear(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		kv.Clear()
-		ctx.Status(http.StatusNoContent)
+		key := ctx.Param("key")
+
+		// Check if empty key
+		if key == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"message": "Key parameter is missing"})
+			return
+		}
+
+		// Check if key exists and get value
+		val, ok := kv.Clear(key)
+		if !ok {
+			ctx.JSON(http.StatusNotFound, gin.H{"message": "Key not found"})
+			return
+		}
+
+		// Build response
+		res := keyvaluestore.NewKeyValue(key, val)
+
+		// Serialize response
+		ctx.JSON(http.StatusAccepted, res)
 	}
 }
 
@@ -208,7 +220,8 @@ func main() {
 	router.POST("/items", handleSet(kv))
 
 	// DELETE endpoints
-	router.DELETE("/items", handleClear(kv))
+	router.DELETE("/items", handleClearAll(kv))
+	router.DELETE("/items/:key", handleClear(kv))
 
 	// Get address
 	port := 8080

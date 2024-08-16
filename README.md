@@ -12,7 +12,7 @@
 - [ ] Add persistence logic to store on file(docker volume--with docker compose)
 - [ ] Write our persistence layer as an interface
 - [x] Create [Docker Compose][] file to reliably create local environment
-- [ ] Add standard dictionary methods to our base key value store and API, see the common python dictionary methods.
+- [x] Add standard dictionary methods to our base key value store and API, see the common python dictionary methods.
 - [ ] Write unit tests for key value system
 - [ ] HTTP tests for REST API
 - [ ] Create Makefile for dev setup 
