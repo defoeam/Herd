@@ -145,7 +145,7 @@ func handleClear(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 			return
 		}
 
-		// Check if key exists and get value
+		// Check if key exists and delete value
 		val, ok := kv.Clear(key)
 		if !ok {
 			ctx.JSON(http.StatusNotFound, gin.H{"message": "Key not found"})
