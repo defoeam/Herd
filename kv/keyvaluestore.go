@@ -59,7 +59,7 @@ func (kv *KeyValueStore) GetAll() map[string]string {
 	return maps.Clone(kv.data)
 }
 
-// GetKeys returns all keys from the store
+// GetKeys returns all keys from the store.
 func (kv *KeyValueStore) GetKeys() []string {
 	kv.mu.RLock()
 	defer kv.mu.RUnlock()
@@ -72,7 +72,7 @@ func (kv *KeyValueStore) GetKeys() []string {
 	return keys
 }
 
-// GetValues returns all values from the store
+// GetValues returns all values from the store.
 func (kv *KeyValueStore) GetValues() []string {
 	kv.mu.RLock()
 	defer kv.mu.RUnlock()
@@ -85,7 +85,7 @@ func (kv *KeyValueStore) GetValues() []string {
 	return values
 }
 
-// Clears all key/value pairs from the store
+// Clears all key/value pairs from the store.
 func (kv *KeyValueStore) ClearAll() {
 	kv.mu.Lock()
 	defer kv.mu.Unlock()
@@ -95,7 +95,7 @@ func (kv *KeyValueStore) ClearAll() {
 	}
 }
 
-// Clears a specific key value pair from the store
+// Clears a specific key value pair from the store.
 func (kv *KeyValueStore) Clear(key string) (string, bool) {
 	kv.mu.Lock()
 	defer kv.mu.Unlock()

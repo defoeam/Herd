@@ -134,7 +134,7 @@ func handleClearAll(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	}
 }
 
-// handleClear removes an item from the store and returns a copy of the deleted key/value pair
+// handleClear removes an item from the store and returns a copy of the deleted key/value pair.
 func handleClear(kv *keyvaluestore.KeyValueStore) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		key := ctx.Param("key")
