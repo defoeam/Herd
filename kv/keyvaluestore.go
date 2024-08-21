@@ -4,27 +4,29 @@ import (
 	"log"
 	"maps"
 	"sync"
+
+	"github.com/goccy/go-json"
 )
 
 // KeyValueStore represents the key-value store.
 type KeyValueStore struct {
-	data map[string]string
+	data map[string][]byte
 	mu   sync.RWMutex
 }
 
 // NewKeyValueStore creates a new instance of KeyValueStore.
 func NewKeyValueStore() *KeyValueStore {
 	return &KeyValueStore{
-		data: make(map[string]string),
+		data: make(map[string][]byte),
 	}
 }
 
 type KeyValue struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
+	Key   string          `json:"key"`
+	Value json.RawMessage `json:"value"`
 }
 
-func NewKeyValue(key string, value string) *KeyValue {
+func NewKeyValue(key string, value json.RawMessage) *KeyValue {
 	kv := KeyValue{
 		Key:   key,
 		Value: value,
@@ -34,7 +36,7 @@ func NewKeyValue(key string, value string) *KeyValue {
 }
 
 // Set adds or updates a key-value pair in the store.
-func (kv *KeyValueStore) Set(key string, value string) {
+func (kv *KeyValueStore) Set(key string, value json.RawMessage) {
 	kv.mu.Lock()
 	defer kv.mu.Unlock()
 
@@ -43,7 +45,7 @@ func (kv *KeyValueStore) Set(key string, value string) {
 }
 
 // Get retrieves the value associated with a key from the store.
-func (kv *KeyValueStore) Get(key string) (string, bool) {
+func (kv *KeyValueStore) Get(key string) (json.RawMessage, bool) {
 	kv.mu.RLock()
 	defer kv.mu.RUnlock()
 
@@ -52,7 +54,7 @@ func (kv *KeyValueStore) Get(key string) (string, bool) {
 }
 
 // GetAll retries all key-values pairs from the store.
-func (kv *KeyValueStore) GetAll() map[string]string {
+func (kv *KeyValueStore) GetAll() map[string][]byte {
 	kv.mu.RLock()
 	defer kv.mu.RUnlock()
 
@@ -73,11 +75,11 @@ func (kv *KeyValueStore) GetKeys() []string {
 }
 
 // GetValues returns all values from the store.
-func (kv *KeyValueStore) GetValues() []string {
+func (kv *KeyValueStore) GetValues() []json.RawMessage {
 	kv.mu.RLock()
 	defer kv.mu.RUnlock()
 
-	values := make([]string, 0, len(kv.data))
+	values := make([]json.RawMessage, 0, len(kv.data))
 	for _, v := range kv.data {
 		values = append(values, v)
 	}
@@ -96,7 +98,7 @@ func (kv *KeyValueStore) ClearAll() {
 }
 
 // Clears a specific key value pair from the store.
-func (kv *KeyValueStore) Clear(key string) (string, bool) {
+func (kv *KeyValueStore) Clear(key string) ([]byte, bool) {
 	kv.mu.Lock()
 	defer kv.mu.Unlock()
 
