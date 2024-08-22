@@ -16,7 +16,7 @@ RUN go mod download
 COPY . ./
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /kvs
+RUN CGO_ENABLED=0 GOOS=linux go build -o /kvs cmd/kvs/main.go
 
 # --- DEPLOY STAGE ---
 # Deploy the application binary into a lean image
