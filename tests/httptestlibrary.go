@@ -63,19 +63,8 @@ func postMessage(jsonString string) (string, error) {
 
 	url := "http://localhost:8080"
 
-	// Build the request
-	req, err := http.NewRequest("POST", url+"/items", bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Printf("Error creating request: %s", err)
-		return "", err
-	}
-
-	// Set the content type to application/json
-	req.Header.Set("Content-Type", "application/json")
-
-	// Send the request
-	client := &http.Client{}
-	res, err := client.Do(req)
+	// Build and send the request
+	res, err := http.Post(url+"/items", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("Error sending request: %s", err)
 		return "", err
@@ -89,19 +78,17 @@ func postMessage(jsonString string) (string, error) {
 		return "", err
 	}
 
-	bodyString := string(body)
-	log.Printf("Response body: %s", bodyString)
-	return bodyString, nil
+	return string(body), nil
 }
 
-// Method to interface the /items/ GET endpoint
+// Method to interface the /items/ GET endpoint.
 
-// Method to interface the /items/:key GET endpoint
+// Method to interface the /items/:key GET endpoint.
 
-// Method to interface the /items/keys GET endpoint
+// Method to interface the /items/keys GET endpoint.
 
-// Method to interface the /items/values GET endpoint
+// Method to interface the /items/values GET endpoint.
 
-// Method to interface the /items DELETE endpoint
+// Method to interface the /items DELETE endpoint.
 
-// Method to interface the /items/:key DELETE endpoint
+// Method to interface the /items/:key DELETE endpoint.
