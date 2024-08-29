@@ -202,7 +202,7 @@ func handleGetValues(kv *KeyValueStore) gin.HandlerFunc {
 	}
 }
 
-// Starts the KVS http server
+// Starts the KVS http server.
 func StartServer() {
 	// Create a new instance of KeyValueStore.
 	kv := NewKeyValueStore()

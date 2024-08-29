@@ -1,51 +1,58 @@
-package keyvaluestore
+package keyvaluestore_test
 
 import (
 	"testing"
 
 	kvs "github.com/defoeam/kvs/kv"
+	kvstesting "github.com/defoeam/kvs/tests"
 )
 
-// Before any tests can be ran on the http server,
-// we must actually start it.
-func init() {
-	// Start the server on a seperate thread.
-	go kvs.StartServer()
+var serverRunning = false
+
+// Utility method which starts the kvs server on a seperate thread if it isn't already running.
+// This method should be called at the start of each test set.
+func ensureServerRunning() {
+	if !serverRunning {
+		go kvs.StartServer()
+		serverRunning = true
+	}
 }
 
 func TestSet1(t *testing.T) {
-	tests := []HttpTest{
+	ensureServerRunning()
+
+	tests := []kvstesting.HTTPTest{
 		{
-			name: "Populate the store, pt. 1",
-			args: HttpArgs{method: "POST", endpoint: "/items", key: "0", value: []byte(`"Hello World!"`)},
-			want: `{"key":"0","value":"Hello World!"}`,
+			Name: "Populate the store, pt. 1",
+			Args: kvstesting.HTTPArgs{Method: "POST", Endpoint: "/items", Key: "0", Value: []byte(`"Hello World!"`)},
+			Want: `{"key":"0","value":"Hello World!"}`,
 		},
 		{
-			name: "Populate the store, pt. 2",
-			args: HttpArgs{method: "POST", endpoint: "/items", key: "1", value: []byte("[53,58,203]")},
-			want: `{"key":"1","value":[53,58,203]}`,
+			Name: "Populate the store, pt. 2",
+			Args: kvstesting.HTTPArgs{Method: "POST", Endpoint: "/items", Key: "1", Value: []byte("[53,58,203]")},
+			Want: `{"key":"1","value":[53,58,203]}`,
 		},
 		{
-			name: "Get all items, pt. 1",
-			args: HttpArgs{method: "GET", endpoint: "/items", key: "", value: []byte{}},
-			want: "",
+			Name: "Get all items, pt. 1",
+			Args: kvstesting.HTTPArgs{Method: "GET", Endpoint: "/items", Key: "", Value: []byte{}},
+			Want: "",
 		},
 		{
-			name: "Get item at key 0",
-			args: HttpArgs{method: "GET", endpoint: "/items/0", key: "", value: []byte{}},
-			want: `{"key":"0","value":"Hello World!"}`,
+			Name: "Get item at key 0",
+			Args: kvstesting.HTTPArgs{Method: "GET", Endpoint: "/items/0", Key: "", Value: []byte{}},
+			Want: `{"key":"0","value":"Hello World!"}`,
 		},
 		{
-			name: "Delete item at key 0",
-			args: HttpArgs{method: "DELETE", endpoint: "/items/0", key: "", value: []byte{}},
-			want: `{"key":"0","value":"Hello World!"}`,
+			Name: "Delete item at key 0",
+			Args: kvstesting.HTTPArgs{Method: "DELETE", Endpoint: "/items/0", Key: "", Value: []byte{}},
+			Want: `{"key":"0","value":"Hello World!"}`,
 		},
 		{
-			name: "Get all items, pt. 2",
-			args: HttpArgs{method: "GET", endpoint: "/items", key: "", value: []byte{}},
-			want: "",
+			Name: "Get all items, pt. 2",
+			Args: kvstesting.HTTPArgs{Method: "GET", Endpoint: "/items", Key: "", Value: []byte{}},
+			Want: "",
 		},
 	}
 
-	HandleHTTPTests(t, tests)
+	kvstesting.HandleHTTPTests(t, tests)
 }

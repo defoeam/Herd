@@ -2,6 +2,7 @@ package keyvaluestore
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -10,127 +11,115 @@ import (
 	"testing"
 )
 
-var url string = "http://localhost:8080"
+var url = "http://localhost:8080"
 
-type HttpTest struct {
-	name string
-	args HttpArgs
-	want string
+type HTTPTest struct {
+	Name string
+	Args HTTPArgs
+	Want string
 }
 
-type HttpArgs struct {
-	method   string // GET, POST, DELETE
-	endpoint string // /items, items/:key, /items/keys, /items/values
-	key      string
-	value    []byte
+type HTTPArgs struct {
+	Method   string // GET, POST, DELETE
+	Endpoint string // /items, items/:key, /items/keys, /items/values
+	Key      string
+	Value    []byte
 }
 
-// Executes a specific request defined by a singular http test
-func (test *HttpTest) ExecuteRequest() (string, error) {
-	switch test.args.method {
+// Executes a specific request defined by a singular http test.
+func (test *HTTPTest) ExecuteRequest() (string, error) {
+	switch test.Args.Method {
 	case "GET":
-		return getMessage(&test.args)
+		return getMessage(&test.Args)
 	case "POST":
-		return postMessage(&test.args)
+		return postMessage(&test.Args)
 	case "DELETE":
-		return deleteMessage(&test.args)
+		return deleteMessage(&test.Args)
 	default:
 		return "", errors.New("invalid http method provided")
 	}
 }
 
-// Builds the json formatted post request body
-func (args *HttpArgs) GetJSONString() string {
-	return fmt.Sprintf(`{"key":"%s","value":%s}`, args.key, args.value)
+// Builds the json formatted post request body.
+func (args *HTTPArgs) GetJSONString() string {
+	return fmt.Sprintf(`{"key":"%s","value":%s}`, args.Key, args.Value)
 }
 
 // Public method that handles a series of http tests.
-func HandleHTTPTests(t *testing.T, tests []HttpTest) {
+func HandleHTTPTests(t *testing.T, tests []HTTPTest) {
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.Name, func(t *testing.T) {
 			res, err := test.ExecuteRequest()
 			if err != nil {
-				t.Fatalf("Error %s encountered while executing test %s", err, test.name)
+				t.Fatalf("Error %s encountered while executing test %s", err, test.Name)
 			}
 
 			// If want is not empty, and response is not equal to want
-			if test.want != "" && res != test.want {
-				t.Errorf("Expected %s, got %s", test.want, res)
+			if test.Want != "" && res != test.Want {
+				t.Errorf("Expected %s, got %s", test.Want, res)
 			}
 		})
 	}
 }
 
 // Method to interface the POST endpoint.
-func postMessage(args *HttpArgs) (string, error) {
+func postMessage(args *HTTPArgs) (string, error) {
 	jsonData := []byte(args.GetJSONString())
 
-	// Build and send the request
-	res, err := http.Post(url+args.endpoint, "application/json", bytes.NewBuffer(jsonData))
+	// Create a new HTTP request with context
+	req, err := http.NewRequestWithContext(context.Background(), "POST", url+args.Endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
-		log.Printf("Error sending request: %s", err)
+		log.Printf("Error creating request: %s", err)
 		return "", err
 	}
 
-	// Read the response body
-	body, err := readResponseBody(res)
-	if err != nil {
-		log.Printf("Error reading response body: %s", err)
-		return "", err
-	}
+	// Set the Content-Type header
+	req.Header.Set("Content-Type", "application/json")
 
-	return string(body), nil
+	return sendReqAndGetResp(req)
 }
 
 // Method to interface the GET endpoints.
-func getMessage(args *HttpArgs) (string, error) {
-	// Make request
-	res, err := http.Get(url + args.endpoint)
+func getMessage(args *HTTPArgs) (string, error) {
+	// Create a new HTTP request with context
+	req, err := http.NewRequestWithContext(context.Background(), "GET", url+args.Endpoint, nil)
 	if err != nil {
-		log.Printf("Error sending request: %s", err)
+		log.Printf("Error creating request: %s", err)
 		return "", err
 	}
 
-	// Handle response
-	body, err := readResponseBody(res)
-	if err != nil {
-		log.Printf("Error reading response: %s", err)
-		return "", err
-	}
-
-	return string(body), nil
+	return sendReqAndGetResp(req)
 }
 
 // Method to interface the DELETE endpoints.
-func deleteMessage(args *HttpArgs) (string, error) {
-
-	// Build the request
-	req, err := http.NewRequest("DELETE", url+args.endpoint, nil)
+func deleteMessage(args *HTTPArgs) (string, error) {
+	// Build the request with context
+	req, err := http.NewRequestWithContext(context.Background(), "DELETE", url+args.Endpoint, nil)
 	if err != nil {
 		log.Printf("Error building request: %s", err)
 		return "", err
 	}
 
-	// Send the request
+	return sendReqAndGetResp(req)
+}
+
+// Method to send http requests and read response bodies.
+func sendReqAndGetResp(req *http.Request) (string, error) {
+	// Create an HTTP client and send the request
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
 		log.Printf("Error sending request: %s", err)
 		return "", err
 	}
+	defer res.Body.Close()
 
 	// Read response
-	body, err := readResponseBody(res)
+	temp, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Printf("Error reading response body: %s", err)
+		return "", err
 	}
 
-	return body, nil
-}
-
-// Method to read response bodies
-func readResponseBody(resp *http.Response) (body string, err error) {
-	defer resp.Body.Close()
-	temp, err := io.ReadAll(resp.Body)
-	return string(temp), err
+	return string(temp), nil
 }
