@@ -12,7 +12,7 @@ import (
 )
 
 // Utility method which stores the localhost test url and appends any given endpoint string.
-func getUrl(endpoint string) string {
+func getURL(endpoint string) string {
 	url := "http://localhost:8080"
 	return url + endpoint
 }
@@ -71,7 +71,7 @@ func postMessage(args *HTTPArgs) (string, error) {
 	jsonData := []byte(args.GetJSONString())
 
 	// Create a new HTTP request with context
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, getUrl(args.Endpoint), bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, getURL(args.Endpoint), bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("Error creating request: %s", err)
 		return "", err
@@ -86,7 +86,7 @@ func postMessage(args *HTTPArgs) (string, error) {
 // Method to interface the GET endpoints.
 func getMessage(args *HTTPArgs) (string, error) {
 	// Create a new HTTP request with context
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, getUrl(args.Endpoint), nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, getURL(args.Endpoint), nil)
 	if err != nil {
 		log.Printf("Error creating request: %s", err)
 		return "", err
@@ -98,7 +98,7 @@ func getMessage(args *HTTPArgs) (string, error) {
 // Method to interface the DELETE endpoints.
 func deleteMessage(args *HTTPArgs) (string, error) {
 	// Build the request with context
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodDelete, getUrl(args.Endpoint), nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodDelete, getURL(args.Endpoint), nil)
 	if err != nil {
 		log.Printf("Error building request: %s", err)
 		return "", err
