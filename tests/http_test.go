@@ -4,18 +4,17 @@ import (
 	"net/http"
 	"testing"
 
-	kvs "github.com/defoeam/kvs/kv"
-	kvstesting "github.com/defoeam/kvs/tests"
+	kvs "github.com/defoeam/kvs/internal"
 )
 
 func TestSet1(t *testing.T) {
 	// Start the kvs server
 	go kvs.StartServer()
 
-	tests := []kvstesting.HTTPTest{
+	tests := []kvs.HTTPTest{
 		{
 			Name: "Populate the store, pt. 1",
-			Args: kvstesting.HTTPArgs{
+			Args: kvs.HTTPArgs{
 				Method:   http.MethodPost,
 				Endpoint: "/items",
 				Key:      "0",
@@ -24,7 +23,7 @@ func TestSet1(t *testing.T) {
 		},
 		{
 			Name: "Populate the store, pt. 2",
-			Args: kvstesting.HTTPArgs{
+			Args: kvs.HTTPArgs{
 				Method:   http.MethodPost,
 				Endpoint: "/items",
 				Key:      "1",
@@ -33,7 +32,7 @@ func TestSet1(t *testing.T) {
 		},
 		{
 			Name: "Get all items, pt. 1",
-			Args: kvstesting.HTTPArgs{
+			Args: kvs.HTTPArgs{
 				Method:   http.MethodGet,
 				Endpoint: "/items",
 				Key:      "",
@@ -42,7 +41,7 @@ func TestSet1(t *testing.T) {
 		},
 		{
 			Name: "Get item at key 0",
-			Args: kvstesting.HTTPArgs{
+			Args: kvs.HTTPArgs{
 				Method:   http.MethodGet,
 				Endpoint: "/items/0",
 				Key:      "",
@@ -51,7 +50,7 @@ func TestSet1(t *testing.T) {
 		},
 		{
 			Name: "Delete item at key 0",
-			Args: kvstesting.HTTPArgs{
+			Args: kvs.HTTPArgs{
 				Method:   http.MethodDelete,
 				Endpoint: "/items/0",
 				Key:      "",
@@ -60,7 +59,7 @@ func TestSet1(t *testing.T) {
 		},
 		{
 			Name: "Get all items, pt. 2",
-			Args: kvstesting.HTTPArgs{
+			Args: kvs.HTTPArgs{
 				Method:   http.MethodGet,
 				Endpoint: "/items",
 				Key:      "",
@@ -69,5 +68,5 @@ func TestSet1(t *testing.T) {
 		},
 	}
 
-	kvstesting.HandleHTTPTests(t, tests)
+	kvs.HandleHTTPTests(t, tests)
 }
