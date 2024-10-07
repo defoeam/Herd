@@ -1,24 +1,53 @@
 package keyvaluestore
 
 import (
+	"fmt"
 	"log"
 	"maps"
+	"os"
 	"sync"
+	"time"
 
 	"github.com/goccy/go-json"
 )
 
 // KeyValueStore represents the key-value store.
 type KeyValueStore struct {
-	data map[string][]byte
-	mu   sync.RWMutex
+	data   map[string][]byte
+	mu     sync.RWMutex
+	logger *Logger
 }
 
 // NewKeyValueStore creates a new instance of KeyValueStore.
-func NewKeyValueStore() *KeyValueStore {
-	return &KeyValueStore{
-		data: make(map[string][]byte),
+func NewKeyValueStore(logFile string) (*KeyValueStore, error) {
+	// Check if the log file exists, create it if it doesn't
+	if _, err := os.Stat(logFile); os.IsNotExist(err) {
+		file, err := os.Create(logFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create log file: %v", err)
+		}
+		file.Close()
 	}
+
+	logger, err := NewLogger(logFile)
+	if err != nil {
+		return nil, err
+	}
+
+	kv := &KeyValueStore{
+		data:   make(map[string][]byte),
+		logger: logger,
+	}
+
+	// Read and process log entries
+	entries, err := logger.ReadLogs()
+	if err != nil {
+		return nil, fmt.Errorf("failed to read log entries: %v", err)
+	}
+
+	kv.ProcessLogEntries(entries)
+
+	return kv, nil
 }
 
 type KeyValue struct {
@@ -42,6 +71,13 @@ func (kv *KeyValueStore) Set(key string, value json.RawMessage) {
 
 	log.Printf("Adding \"%s\" to kvs", key)
 	kv.data[key] = value
+
+	kv.logger.Log(LogEntry{
+		Timestamp: time.Now(),
+		Operation: "SET",
+		Key:       key,
+		Value:     string(value),
+	})
 }
 
 // Get retrieves the value associated with a key from the store.
@@ -105,5 +141,30 @@ func (kv *KeyValueStore) Clear(key string) ([]byte, bool) {
 	deletedVal, ok := kv.data[key]
 	delete(kv.data, key)
 
+	kv.logger.Log(LogEntry{
+		Timestamp: time.Now(),
+		Operation: "DELETE",
+		Key:       key,
+		Value:     string(deletedVal),
+	})
+
 	return deletedVal, ok
+}
+
+func (kv *KeyValueStore) ProcessLogEntries(entries []LogEntry) {
+	kv.mu.Lock()
+	defer kv.mu.Unlock()
+
+	for _, entry := range entries {
+		switch entry.Operation {
+		case "SET":
+			kv.data[entry.Key] = []byte(entry.Value)
+		case "DELETE":
+			delete(kv.data, entry.Key)
+		}
+	}
+}
+
+func (kv *KeyValueStore) CompactLogs() error {
+	return kv.logger.CompactLogs()
 }
