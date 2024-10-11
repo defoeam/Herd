@@ -1,6 +1,6 @@
 <div align="center">
 
-![logo image](./image.svg)
+![logo image](./banner.png)
 
 ![build](https://img.shields.io/github/actions/workflow/status/defoeam/kvs/docker.yaml)
 

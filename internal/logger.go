@@ -37,8 +37,8 @@ func NewLogger(filename string) (*Logger, error) {
 	return &Logger{filename: filename}, nil
 }
 
-// Log writes a log entry to the logger's file.
-func (l *Logger) Log(entry LogEntry) {
+// WriteLog writes a log entry to the logger's file.
+func (l *Logger) WriteLog(entry LogEntry) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -84,13 +84,13 @@ func parseLogLine(line string) (LogEntry, error) {
 
 	operationParts := strings.SplitN(parts[1], " - ", 2)
 	if len(operationParts) != 2 {
-		return LogEntry{}, fmt.Errorf("invalid log line format")
+		return LogEntry{}, fmt.Errorf("invalid log line format (operation)")
 	}
 
 	operation := operationParts[0]
 	keyValue := strings.SplitN(operationParts[1], ", ", 2)
 	if len(keyValue) != 2 {
-		return LogEntry{}, fmt.Errorf("invalid log line format")
+		return LogEntry{}, fmt.Errorf("invalid log line format (key/value)")
 	}
 
 	key := strings.TrimPrefix(keyValue[0], "Key: ")
@@ -197,4 +197,18 @@ func (l *Logger) readLogsUnsafe() ([]LogEntry, error) {
 	}
 
 	return entries, nil
+}
+
+// ClearLogs clears the entire transaction log file.
+func (l *Logger) ClearLogs() error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	// Truncate the file to zero length
+	err := os.Truncate(l.filename, 0)
+	if err != nil {
+		return fmt.Errorf("failed to truncate log file: %v", err)
+	}
+
+	return nil
 }

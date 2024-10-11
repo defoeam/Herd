@@ -72,7 +72,7 @@ func (kv *KeyValueStore) Set(key string, value json.RawMessage) {
 	log.Printf("Adding \"%s\" to kvs", key)
 	kv.data[key] = value
 
-	kv.logger.Log(LogEntry{
+	kv.logger.WriteLog(LogEntry{
 		Timestamp: time.Now(),
 		Operation: "SET",
 		Key:       key,
@@ -123,14 +123,21 @@ func (kv *KeyValueStore) GetValues() []json.RawMessage {
 	return values
 }
 
-// Clears all key/value pairs from the store.
-func (kv *KeyValueStore) ClearAll() {
+// Clears all key/value pairs from the store and clears the transaction logs.
+func (kv *KeyValueStore) ClearAll() error {
 	kv.mu.Lock()
 	defer kv.mu.Unlock()
 
-	for k := range kv.data {
-		delete(kv.data, k)
+	// Clear the in-memory data
+	kv.data = make(map[string][]byte)
+
+	// Clear the transaction logs
+	err := kv.logger.ClearLogs()
+	if err != nil {
+		return fmt.Errorf("failed to clear transaction logs: %v", err)
 	}
+
+	return nil
 }
 
 // Clears a specific key value pair from the store.
@@ -141,7 +148,7 @@ func (kv *KeyValueStore) Clear(key string) ([]byte, bool) {
 	deletedVal, ok := kv.data[key]
 	delete(kv.data, key)
 
-	kv.logger.Log(LogEntry{
+	kv.logger.WriteLog(LogEntry{
 		Timestamp: time.Now(),
 		Operation: "DELETE",
 		Key:       key,
