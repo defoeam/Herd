@@ -129,7 +129,10 @@ func handleSet(kv *KeyValueStore) gin.HandlerFunc {
 // handleClearAll removes all items from the store.
 func handleClearAll(kv *KeyValueStore) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		kv.ClearAll()
+		if err := kv.ClearAll(); err != nil {
+			// Handle the error appropriately
+			log.Printf("Failed to clear all items: %v", err)
+		}
 		ctx.Status(http.StatusNoContent)
 	}
 }

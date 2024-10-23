@@ -22,9 +22,9 @@ type KeyValueStore struct {
 func NewKeyValueStore(logFile string, snapshotInterval time.Duration) (*KeyValueStore, error) {
 	// Check if the log file exists, create it if it doesn't
 	if _, err := os.Stat(logFile); os.IsNotExist(err) {
-		file, err := os.Create(logFile)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create log file: %w", err)
+		file, createErr := os.Create(logFile)
+		if createErr != nil {
+			return nil, fmt.Errorf("failed to create log file: %w", createErr)
 		}
 		file.Close()
 	}
