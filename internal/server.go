@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -204,16 +205,16 @@ func handleGetValues(kv *KeyValueStore) gin.HandlerFunc {
 
 // Starts the KVS http server.
 func StartServer() {
-	// Create a new instance of KeyValueStore with a log file.
-	kv, err := NewKeyValueStore("log/transaction.log")
+	// Create a new instance of KeyValueStore with a log file and snapshot interval.
+	kv, err := NewKeyValueStore("C:/repos/herd/logs/transaction.log", 1*time.Hour)
 	if err != nil {
 		log.Fatalf("Failed to create KeyValueStore: %v", err)
 	}
 
 	// Compact logs on startup
-	if err := kv.CompactLogs(); err != nil {
-		log.Printf("Failed to compact logs: %v", err)
-	}
+	// if err := kv.CompactLogs(); err != nil {
+	// 	log.Printf("Failed to compact logs: %v", err)
+	// }
 
 	// Setup gin engine
 	router := gin.Default()

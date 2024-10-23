@@ -1,25 +1,25 @@
 package keyvaluestore
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"maps"
 	"os"
 	"sync"
 	"time"
-
-	"github.com/goccy/go-json"
 )
 
 // KeyValueStore represents the key-value store.
 type KeyValueStore struct {
-	data   map[string][]byte
-	mu     sync.RWMutex
-	logger *Logger
+	data             map[string][]byte
+	mu               sync.RWMutex
+	logger           *Logger
+	snapshotInterval time.Duration
 }
 
 // NewKeyValueStore creates a new instance of KeyValueStore.
-func NewKeyValueStore(logFile string) (*KeyValueStore, error) {
+func NewKeyValueStore(logFile string, snapshotInterval time.Duration) (*KeyValueStore, error) {
 	// Check if the log file exists, create it if it doesn't
 	if _, err := os.Stat(logFile); os.IsNotExist(err) {
 		file, err := os.Create(logFile)
@@ -35,8 +35,14 @@ func NewKeyValueStore(logFile string) (*KeyValueStore, error) {
 	}
 
 	kv := &KeyValueStore{
-		data:   make(map[string][]byte),
-		logger: logger,
+		data:             make(map[string][]byte),
+		logger:           logger,
+		snapshotInterval: snapshotInterval,
+	}
+
+	// Load the latest snapshot
+	if err := kv.LoadLatestSnapshot(); err != nil {
+		return nil, fmt.Errorf("failed to load latest snapshot: %v", err)
 	}
 
 	// Read and process log entries
@@ -46,6 +52,9 @@ func NewKeyValueStore(logFile string) (*KeyValueStore, error) {
 	}
 
 	kv.ProcessLogEntries(entries)
+
+	// Start the snapshot scheduler
+	go kv.snapshotScheduler()
 
 	return kv, nil
 }
@@ -172,6 +181,23 @@ func (kv *KeyValueStore) ProcessLogEntries(entries []LogEntry) {
 	}
 }
 
+// Compacts the transaction logs by calling the logger's CompactLogs method.
 func (kv *KeyValueStore) CompactLogs() error {
 	return kv.logger.CompactLogs()
+}
+
+// snapshotScheduler runs periodically to take snapshots of the key-value store.
+// It uses a ticker to trigger snapshots at the interval specified by kv.snapshotInterval.
+// If a snapshot fails, it logs the error but continues running.
+func (kv *KeyValueStore) snapshotScheduler() {
+	ticker := time.NewTicker(kv.snapshotInterval)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		if err := kv.TakeSnapshot(); err != nil {
+			log.Printf("Failed to take snapshot: %v", err)
+		}
+
+		log.Printf("Snapshot taken at %v", time.Now())
+	}
 }
