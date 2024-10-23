@@ -1,7 +1,7 @@
 package main
 
 import (
-	kvs "github.com/defoeam/kvs/internal"
+	kvs "github.com/defoeam/herd/internal"
 )
 
 func main() {

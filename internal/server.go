@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -128,7 +129,10 @@ func handleSet(kv *KeyValueStore) gin.HandlerFunc {
 // handleClearAll removes all items from the store.
 func handleClearAll(kv *KeyValueStore) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		kv.ClearAll()
+		if err := kv.ClearAll(); err != nil {
+			// Handle the error appropriately
+			log.Printf("Failed to clear all items: %v", err)
+		}
 		ctx.Status(http.StatusNoContent)
 	}
 }
@@ -204,8 +208,16 @@ func handleGetValues(kv *KeyValueStore) gin.HandlerFunc {
 
 // Starts the KVS http server.
 func StartServer() {
-	// Create a new instance of KeyValueStore.
-	kv := NewKeyValueStore()
+	// Create a new instance of KeyValueStore with a log file and snapshot interval.
+	kv, err := NewKeyValueStore("C:/repos/herd/logs/transaction.log", 1*time.Hour)
+	if err != nil {
+		log.Fatalf("Failed to create KeyValueStore: %v", err)
+	}
+
+	// Compact logs on startup
+	// if err := kv.CompactLogs(); err != nil {
+	// 	log.Printf("Failed to compact logs: %v", err)
+	// }
 
 	// Setup gin engine
 	router := gin.Default()
