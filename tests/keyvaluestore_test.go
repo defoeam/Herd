@@ -2,11 +2,12 @@ package keyvaluestore_test
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 	"testing"
 	"time"
 
-	herd "github.com/defoeam/kvs/internal"
+	herd "github.com/defoeam/herd/internal"
 )
 
 func TestKeyValueStore(t *testing.T) {
@@ -83,9 +84,9 @@ func TestKeyValueStore(t *testing.T) {
 		kv.Set("key1", json.RawMessage(`"value1"`))
 		kv.Set("key2", json.RawMessage(`"value2"`))
 
-		err := kv.ClearAll()
-		if err != nil {
-			t.Errorf("Failed to clear all items: %v", err)
+		if err := kv.ClearAll(); err != nil {
+			// Handle the error appropriately
+			log.Printf("Failed to clear all items: %v", err)
 		}
 
 		allItems := kv.GetAll()

@@ -30,19 +30,19 @@ func (kv *KeyValueStore) TakeSnapshot() error {
 
 	snapshotData, err := json.Marshal(snapshot)
 	if err != nil {
-		return fmt.Errorf("failed to marshal snapshot: %v", err)
+		return fmt.Errorf("failed to marshal snapshot: %w", err)
 	}
 
-	snapshotDir := filepath.Dir(kv.logger.filename)
-	snapshotFile := filepath.Join(snapshotDir, fmt.Sprintf("snapshot_%s.json", snapshot.Timestamp.Format("20060102150405")))
+	snapshotFileName := fmt.Sprintf("snapshot_%s.json", snapshot.Timestamp.Format("20060102150405"))
+	snapshotFile := filepath.Join(filepath.Dir(kv.logger.filename), snapshotFileName)
 
-	if err := os.WriteFile(snapshotFile, snapshotData, 0644); err != nil {
-		return fmt.Errorf("failed to write snapshot file: %v", err)
+	if err := os.WriteFile(snapshotFile, snapshotData, 0600); err != nil {
+		return fmt.Errorf("failed to write snapshot file: %w", err)
 	}
 
 	// Truncate the transaction log
 	if err := kv.logger.ClearLogs(); err != nil {
-		return fmt.Errorf("failed to clear transaction logs: %v", err)
+		return fmt.Errorf("failed to clear transaction logs: %w", err)
 	}
 
 	return nil
@@ -52,7 +52,7 @@ func (kv *KeyValueStore) LoadLatestSnapshot() error {
 	snapshotDir := filepath.Dir(kv.logger.filename)
 	snapshots, err := filepath.Glob(filepath.Join(snapshotDir, "snapshot_*.json"))
 	if err != nil {
-		return fmt.Errorf("failed to list snapshot files: %v", err)
+		return fmt.Errorf("failed to list snapshot files: %w", err)
 	}
 
 	if len(snapshots) == 0 {
@@ -62,12 +62,12 @@ func (kv *KeyValueStore) LoadLatestSnapshot() error {
 	latestSnapshot := snapshots[len(snapshots)-1]
 	snapshotData, err := os.ReadFile(latestSnapshot)
 	if err != nil {
-		return fmt.Errorf("failed to read snapshot file: %v", err)
+		return fmt.Errorf("failed to read snapshot file: %w", err)
 	}
 
 	var snapshot Snapshot
 	if err := json.Unmarshal(snapshotData, &snapshot); err != nil {
-		return fmt.Errorf("failed to unmarshal snapshot: %v", err)
+		return fmt.Errorf("failed to unmarshal snapshot: %w", err)
 	}
 
 	kv.mu.Lock()

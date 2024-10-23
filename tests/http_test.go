@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	herd "github.com/defoeam/kvs/internal"
+	herd "github.com/defoeam/herd/internal"
 )
 
 func TestSet1(t *testing.T) {

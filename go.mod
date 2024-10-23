@@ -1,4 +1,4 @@
-module github.com/defoeam/kvs
+module github.com/defoeam/herd
 
 go 1.21
 

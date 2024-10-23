@@ -24,7 +24,7 @@ func NewKeyValueStore(logFile string, snapshotInterval time.Duration) (*KeyValue
 	if _, err := os.Stat(logFile); os.IsNotExist(err) {
 		file, err := os.Create(logFile)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create log file: %v", err)
+			return nil, fmt.Errorf("failed to create log file: %w", err)
 		}
 		file.Close()
 	}
@@ -42,13 +42,13 @@ func NewKeyValueStore(logFile string, snapshotInterval time.Duration) (*KeyValue
 
 	// Load the latest snapshot
 	if err := kv.LoadLatestSnapshot(); err != nil {
-		return nil, fmt.Errorf("failed to load latest snapshot: %v", err)
+		return nil, fmt.Errorf("failed to load latest snapshot: %w", err)
 	}
 
 	// Read and process log entries
 	entries, err := logger.ReadLogs()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read log entries: %v", err)
+		return nil, fmt.Errorf("failed to read log entries: %w", err)
 	}
 
 	kv.ProcessLogEntries(entries)
@@ -143,7 +143,7 @@ func (kv *KeyValueStore) ClearAll() error {
 	// Clear the transaction logs
 	err := kv.logger.ClearLogs()
 	if err != nil {
-		return fmt.Errorf("failed to clear transaction logs: %v", err)
+		return fmt.Errorf("failed to clear transaction logs: %w", err)
 	}
 
 	return nil

@@ -2,6 +2,7 @@ package keyvaluestore
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -30,7 +31,7 @@ func NewLogger(filename string) (*Logger, error) {
 	// Attempt to open the file to ensure it exists and is accessible
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open or create log file: %v", err)
+		return nil, fmt.Errorf("failed to open or create log file: %w", err)
 	}
 	file.Close() // Close the file as we don't need to keep it open
 
@@ -70,11 +71,14 @@ func (l *Logger) ReadLogs() ([]LogEntry, error) {
 }
 
 func parseLogLine(line string) (LogEntry, error) {
-	// Example log line format:
-	// [2023-04-13T12:34:56Z] SET - Key: mykey, Value: {"foo": "bar"}
-	parts := strings.SplitN(line, "] ", 2)
-	if len(parts) != 2 {
-		return LogEntry{}, fmt.Errorf("invalid log line format")
+	const (
+		splitParts        = 2
+		keyValueSeparator = ", "
+	)
+
+	parts := strings.SplitN(line, "] ", splitParts)
+	if len(parts) != splitParts {
+		return LogEntry{}, errors.New("invalid log line format")
 	}
 
 	timestamp, err := time.Parse(time.RFC3339, strings.Trim(parts[0], "[]"))
@@ -84,13 +88,13 @@ func parseLogLine(line string) (LogEntry, error) {
 
 	operationParts := strings.SplitN(parts[1], " - ", 2)
 	if len(operationParts) != 2 {
-		return LogEntry{}, fmt.Errorf("invalid log line format (operation)")
+		return LogEntry{}, errors.New("invalid log line format (operation)")
 	}
 
 	operation := operationParts[0]
-	keyValue := strings.SplitN(operationParts[1], ", ", 2)
+	keyValue := strings.SplitN(operationParts[1], keyValueSeparator, splitParts)
 	if len(keyValue) != 2 {
-		return LogEntry{}, fmt.Errorf("invalid log line format (key/value)")
+		return LogEntry{}, errors.New("invalid log line format (key/value)")
 	}
 
 	key := strings.TrimPrefix(keyValue[0], "Key: ")
@@ -111,7 +115,7 @@ func (l *Logger) CompactLogs() error {
 	// Read all log entries
 	entries, err := l.readLogsUnsafe()
 	if err != nil {
-		return fmt.Errorf("failed to read log entries: %v", err)
+		return fmt.Errorf("failed to read log entries: %w", err)
 	}
 
 	// Keep only the latest SET entry for each key, and track DELETEs
@@ -131,7 +135,7 @@ func (l *Logger) CompactLogs() error {
 	// Create a temporary file for writing compacted logs
 	tempFile, err := os.CreateTemp(filepath.Dir(l.filename), "compacted_*.log")
 	if err != nil {
-		return fmt.Errorf("failed to create temporary file: %v", err)
+		return fmt.Errorf("failed to create temporary file: %w", err)
 	}
 	defer tempFile.Close()
 
@@ -144,7 +148,7 @@ func (l *Logger) CompactLogs() error {
 			entry.Value,
 		)
 		if _, err := tempFile.WriteString(logLine); err != nil {
-			return fmt.Errorf("failed to write to temporary file: %v", err)
+			return fmt.Errorf("failed to write to temporary file: %w", err)
 		}
 	}
 
@@ -155,24 +159,24 @@ func (l *Logger) CompactLogs() error {
 			key,
 		)
 		if _, err := tempFile.WriteString(logLine); err != nil {
-			return fmt.Errorf("failed to write to temporary file: %v", err)
+			return fmt.Errorf("failed to write to temporary file: %w", err)
 		}
 	}
 
 	// Close the temporary file
 	if err := tempFile.Close(); err != nil {
-		return fmt.Errorf("failed to close temporary file: %v", err)
+		return fmt.Errorf("failed to close temporary file: %w", err)
 	}
 
 	// Rename the temporary file to replace the original log file
 	if err := os.Rename(tempFile.Name(), l.filename); err != nil {
-		return fmt.Errorf("failed to rename temporary file: %v", err)
+		return fmt.Errorf("failed to rename temporary file: %w", err)
 	}
 
 	return nil
 }
 
-// readLogsUnsafe reads log entries without locking the mutex
+// readLogsUnsafe reads log entries without locking the mutex.
 func (l *Logger) readLogsUnsafe() ([]LogEntry, error) {
 	file, err := os.Open(l.filename)
 	if err != nil {
@@ -207,7 +211,7 @@ func (l *Logger) ClearLogs() error {
 	// Truncate the file to zero length
 	err := os.Truncate(l.filename, 0)
 	if err != nil {
-		return fmt.Errorf("failed to truncate log file: %v", err)
+		return fmt.Errorf("failed to truncate log file: %w", err)
 	}
 
 	return nil
