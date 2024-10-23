@@ -29,9 +29,9 @@ func NewKeyValueStore(logFile string, snapshotInterval time.Duration) (*KeyValue
 		file.Close()
 	}
 
-	logger, err := NewLogger(logFile)
-	if err != nil {
-		return nil, err
+	logger, loggerErr := NewLogger(logFile)
+	if loggerErr != nil {
+		return nil, loggerErr
 	}
 
 	kv := &KeyValueStore{
@@ -41,14 +41,14 @@ func NewKeyValueStore(logFile string, snapshotInterval time.Duration) (*KeyValue
 	}
 
 	// Load the latest snapshot
-	if err := kv.LoadLatestSnapshot(); err != nil {
-		return nil, fmt.Errorf("failed to load latest snapshot: %w", err)
+	if snapshotErr := kv.LoadLatestSnapshot(); snapshotErr != nil {
+		return nil, fmt.Errorf("failed to load latest snapshot: %w", snapshotErr)
 	}
 
 	// Read and process log entries
-	entries, err := logger.ReadLogs()
-	if err != nil {
-		return nil, fmt.Errorf("failed to read log entries: %w", err)
+	entries, readLogsErr := logger.ReadLogs()
+	if readLogsErr != nil {
+		return nil, fmt.Errorf("failed to read log entries: %w", readLogsErr)
 	}
 
 	kv.ProcessLogEntries(entries)

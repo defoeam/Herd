@@ -114,7 +114,11 @@ func TestKeyValueStore(t *testing.T) {
 	})
 
 	t.Run("GetValues", func(t *testing.T) {
-		kv.ClearAll()
+		err := kv.ClearAll()
+		if err != nil {
+			log.Printf("Failed to clear all items: %v", err)
+		}
+
 		kv.Set("key1", json.RawMessage(`"value1"`))
 		kv.Set("key2", json.RawMessage(`"value2"`))
 
