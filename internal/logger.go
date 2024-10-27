@@ -119,9 +119,9 @@ func (l *Logger) readLogsUnsafe() ([]LogEntry, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		entry, err := parseLogLine(line)
-		if err != nil {
-			log.Printf("Error parsing log line: %v", err)
+		entry, parseLogLineErr := parseLogLine(line)
+		if parseLogLineErr != nil {
+			log.Printf("Error parsing log line: %v", parseLogLineErr)
 			continue
 		}
 		entries = append(entries, entry)

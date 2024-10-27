@@ -46,6 +46,10 @@ func TestGetSet(t *testing.T) {
 			t.Errorf("Unexpected value for key2: %s", allItems["key2"])
 		}
 	})
+}
+
+func TestGetKeysValues(t *testing.T) {
+	kv := herd.NewKeyValueStore()
 
 	t.Run("GetKeys", func(t *testing.T) {
 		// clear all items to prep for test
@@ -99,7 +103,6 @@ func TestGetSet(t *testing.T) {
 }
 
 func TestClear(t *testing.T) {
-
 	// Create a new KeyValueStore instance
 	kv := herd.NewKeyValueStore()
 
