@@ -18,45 +18,48 @@ type KeyValueStore struct {
 	snapshotInterval time.Duration
 }
 
-// NewKeyValueStore creates a new instance of KeyValueStore.
-func NewKeyValueStore(logFile string, snapshotInterval time.Duration) (*KeyValueStore, error) {
+func (kv *KeyValueStore) InitLogging(logFile string, snapshotInterval time.Duration) error {
 	// Check if the log file exists, create it if it doesn't
 	if _, err := os.Stat(logFile); os.IsNotExist(err) {
 		file, createErr := os.Create(logFile)
 		if createErr != nil {
-			return nil, fmt.Errorf("failed to create log file: %w", createErr)
+			return fmt.Errorf("failed to create log file: %w", createErr)
 		}
 		file.Close()
 	}
 
 	logger, loggerErr := NewLogger(logFile)
 	if loggerErr != nil {
-		return nil, loggerErr
-	}
-
-	kv := &KeyValueStore{
-		data:             make(map[string][]byte),
-		logger:           logger,
-		snapshotInterval: snapshotInterval,
+		return loggerErr
 	}
 
 	// Load the latest snapshot
 	if snapshotErr := kv.LoadLatestSnapshot(); snapshotErr != nil {
-		return nil, fmt.Errorf("failed to load latest snapshot: %w", snapshotErr)
+		return fmt.Errorf("failed to load latest snapshot: %w", snapshotErr)
 	}
 
 	// Read and process log entries
 	entries, readLogsErr := logger.ReadLogs()
 	if readLogsErr != nil {
-		return nil, fmt.Errorf("failed to read log entries: %w", readLogsErr)
+		return fmt.Errorf("failed to read log entries: %w", readLogsErr)
 	}
 
 	kv.ProcessLogEntries(entries)
 
 	// Start the snapshot scheduler
 	go kv.snapshotScheduler()
+	return nil
+}
 
-	return kv, nil
+// NewKeyValueStore creates a new instance of KeyValueStore.
+func NewKeyValueStore() *KeyValueStore {
+	kv := &KeyValueStore{
+		data:             make(map[string][]byte),
+		logger:           nil,
+		snapshotInterval: 1 * time.Hour,
+	}
+
+	return kv
 }
 
 type KeyValue struct {
@@ -80,6 +83,11 @@ func (kv *KeyValueStore) Set(key string, value json.RawMessage) {
 
 	log.Printf("Adding \"%s\" to kvs", key)
 	kv.data[key] = value
+
+	// if the logger is enabled, write a log entry
+	if kv.logger == nil {
+		return
+	}
 
 	kv.logger.WriteLog(LogEntry{
 		Timestamp: time.Now(),
@@ -140,6 +148,11 @@ func (kv *KeyValueStore) ClearAll() error {
 	// Clear the in-memory data
 	kv.data = make(map[string][]byte)
 
+	// if the logger is enabled, write a log entry
+	if kv.logger == nil {
+		return nil
+	}
+
 	// Clear the transaction logs
 	err := kv.logger.ClearLogs()
 	if err != nil {
@@ -157,12 +170,14 @@ func (kv *KeyValueStore) Clear(key string) ([]byte, bool) {
 	deletedVal, ok := kv.data[key]
 	delete(kv.data, key)
 
-	kv.logger.WriteLog(LogEntry{
-		Timestamp: time.Now(),
-		Operation: "DELETE",
-		Key:       key,
-		Value:     string(deletedVal),
-	})
+	if kv.logger != nil {
+		kv.logger.WriteLog(LogEntry{
+			Timestamp: time.Now(),
+			Operation: "DELETE",
+			Key:       key,
+			Value:     string(deletedVal),
+		})
+	}
 
 	return deletedVal, ok
 }

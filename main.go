@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	kvs.StartServer()
+	kvs.StartServer(true)
 }

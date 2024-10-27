@@ -3,26 +3,14 @@ package keyvaluestore_test
 import (
 	"encoding/json"
 	"log"
-	"os"
 	"testing"
-	"time"
 
 	herd "github.com/defoeam/herd/internal"
 )
 
 func TestKeyValueStore(t *testing.T) {
-	// Create a temporary log file for testing
-	tmpfile, err := os.CreateTemp("", "test_transaction.log")
-	if err != nil {
-		t.Fatalf("Failed to create temporary file: %v", err)
-	}
-	defer os.Remove(tmpfile.Name())
-
 	// Create a new KeyValueStore instance
-	kv, err := herd.NewKeyValueStore(tmpfile.Name(), 1*time.Hour)
-	if err != nil {
-		t.Fatalf("Failed to create KeyValueStore: %v", err)
-	}
+	kv := herd.NewKeyValueStore()
 
 	t.Run("Set and Get", func(t *testing.T) {
 		key := "test_key"

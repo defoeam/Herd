@@ -9,7 +9,7 @@ import (
 
 func TestSet1(t *testing.T) {
 	// Start the kvs server
-	go herd.StartServer()
+	go herd.StartServer(false)
 
 	tests := []herd.HTTPTest{
 		{
