@@ -33,6 +33,9 @@ func (kv *KeyValueStore) InitLogging(logFile string, snapshotInterval time.Durat
 		return loggerErr
 	}
 
+	kv.logger = logger
+	kv.snapshotInterval = snapshotInterval
+
 	// Load the latest snapshot
 	if snapshotErr := kv.LoadLatestSnapshot(); snapshotErr != nil {
 		return fmt.Errorf("failed to load latest snapshot: %w", snapshotErr)
@@ -194,11 +197,6 @@ func (kv *KeyValueStore) ProcessLogEntries(entries []LogEntry) {
 			delete(kv.data, entry.Key)
 		}
 	}
-}
-
-// Compacts the transaction logs by calling the logger's CompactLogs method.
-func (kv *KeyValueStore) CompactLogs() error {
-	return kv.logger.CompactLogs()
 }
 
 // snapshotScheduler runs periodically to take snapshots of the key-value store.

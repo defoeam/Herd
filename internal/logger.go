@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -57,8 +56,8 @@ func (l *Logger) WriteLog(entry LogEntry) {
 		entry.Value,
 	)
 
-	if _, err := file.WriteString(logLine); err != nil {
-		log.Printf("Error writing to log file: %v", err)
+	if _, writeErr := file.WriteString(logLine); writeErr != nil {
+		log.Printf("Error writing to log file: %v", writeErr)
 	}
 }
 
@@ -86,14 +85,14 @@ func parseLogLine(line string) (LogEntry, error) {
 		return LogEntry{}, err
 	}
 
-	operationParts := strings.SplitN(parts[1], " - ", 2)
-	if len(operationParts) != 2 {
+	operationParts := strings.SplitN(parts[1], " - ", splitParts)
+	if len(operationParts) != splitParts {
 		return LogEntry{}, errors.New("invalid log line format (operation)")
 	}
 
 	operation := operationParts[0]
 	keyValue := strings.SplitN(operationParts[1], keyValueSeparator, splitParts)
-	if len(keyValue) != 2 {
+	if len(keyValue) != splitParts {
 		return LogEntry{}, errors.New("invalid log line format (key/value)")
 	}
 
@@ -106,74 +105,6 @@ func parseLogLine(line string) (LogEntry, error) {
 		Key:       key,
 		Value:     value,
 	}, nil
-}
-
-func (l *Logger) CompactLogs() error {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-
-	// Read all log entries
-	entries, err := l.readLogsUnsafe()
-	if err != nil {
-		return fmt.Errorf("failed to read log entries: %w", err)
-	}
-
-	// Keep only the latest SET entry for each key, and track DELETEs
-	latestEntries := make(map[string]LogEntry)
-	deletedKeys := make(map[string]bool)
-	for _, entry := range entries {
-		switch entry.Operation {
-		case "SET":
-			latestEntries[entry.Key] = entry
-			delete(deletedKeys, entry.Key)
-		case "DELETE":
-			delete(latestEntries, entry.Key)
-			deletedKeys[entry.Key] = true
-		}
-	}
-
-	// Create a temporary file for writing compacted logs
-	tempFile, err := os.CreateTemp(filepath.Dir(l.filename), "compacted_*.log")
-	if err != nil {
-		return fmt.Errorf("failed to create temporary file: %w", err)
-	}
-	defer tempFile.Close()
-
-	// Write compacted logs to the temporary file
-	for _, entry := range latestEntries {
-		logLine := fmt.Sprintf("[%s] %s - Key: %s, Value: %s\n",
-			entry.Timestamp.Format(time.RFC3339),
-			entry.Operation,
-			entry.Key,
-			entry.Value,
-		)
-		if _, err := tempFile.WriteString(logLine); err != nil {
-			return fmt.Errorf("failed to write to temporary file: %w", err)
-		}
-	}
-
-	// Write DELETE entries for keys that were ultimately deleted
-	for key := range deletedKeys {
-		logLine := fmt.Sprintf("[%s] DELETE - Key: %s, Value: \n",
-			time.Now().Format(time.RFC3339),
-			key,
-		)
-		if _, err := tempFile.WriteString(logLine); err != nil {
-			return fmt.Errorf("failed to write to temporary file: %w", err)
-		}
-	}
-
-	// Close the temporary file
-	if err := tempFile.Close(); err != nil {
-		return fmt.Errorf("failed to close temporary file: %w", err)
-	}
-
-	// Rename the temporary file to replace the original log file
-	if err := os.Rename(tempFile.Name(), l.filename); err != nil {
-		return fmt.Errorf("failed to rename temporary file: %w", err)
-	}
-
-	return nil
 }
 
 // readLogsUnsafe reads log entries without locking the mutex.
@@ -196,8 +127,8 @@ func (l *Logger) readLogsUnsafe() ([]LogEntry, error) {
 		entries = append(entries, entry)
 	}
 
-	if err := scanner.Err(); err != nil {
-		return nil, err
+	if scanErr := scanner.Err(); scanErr != nil {
+		return nil, scanErr
 	}
 
 	return entries, nil

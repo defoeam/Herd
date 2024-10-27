@@ -8,7 +8,7 @@ import (
 	herd "github.com/defoeam/herd/internal"
 )
 
-func TestKeyValueStore(t *testing.T) {
+func TestGetSet(t *testing.T) {
 	// Create a new KeyValueStore instance
 	kv := herd.NewKeyValueStore()
 
@@ -47,6 +47,62 @@ func TestKeyValueStore(t *testing.T) {
 		}
 	})
 
+	t.Run("GetKeys", func(t *testing.T) {
+		// clear all items to prep for test
+		err := kv.ClearAll()
+		if err != nil {
+			log.Printf("Failed to clear all items: %v", err)
+		}
+
+		// add test key/value pairs
+		kv.Set("key1", json.RawMessage(`"value1"`))
+		kv.Set("key2", json.RawMessage(`"value2"`))
+
+		keys := kv.GetKeys()
+
+		if len(keys) != 2 {
+			t.Errorf("Expected 2 keys, got %d", len(keys))
+		}
+
+		expectedKeys := map[string]bool{"key1": true, "key2": true}
+		for _, key := range keys {
+			if !expectedKeys[key] {
+				t.Errorf("Unexpected key: %s", key)
+			}
+		}
+	})
+
+	t.Run("GetValues", func(t *testing.T) {
+		// clear all items to prep for test
+		err := kv.ClearAll()
+		if err != nil {
+			log.Printf("Failed to clear all items: %v", err)
+		}
+
+		// add test key/value pairs
+		kv.Set("key1", json.RawMessage(`"value1"`))
+		kv.Set("key2", json.RawMessage(`"value2"`))
+
+		values := kv.GetValues()
+
+		if len(values) != 2 {
+			t.Errorf("Expected 2 values, got %d", len(values))
+		}
+
+		expectedValues := map[string]bool{`"value1"`: true, `"value2"`: true}
+		for _, value := range values {
+			if !expectedValues[string(value)] {
+				t.Errorf("Unexpected value: %s", string(value))
+			}
+		}
+	})
+}
+
+func TestClear(t *testing.T) {
+
+	// Create a new KeyValueStore instance
+	kv := herd.NewKeyValueStore()
+
 	t.Run("Clear", func(t *testing.T) {
 		key := "key_to_clear"
 		value := json.RawMessage(`"clear_me"`)
@@ -80,47 +136,6 @@ func TestKeyValueStore(t *testing.T) {
 		allItems := kv.GetAll()
 		if len(allItems) != 0 {
 			t.Errorf("Expected 0 items after ClearAll, got %d", len(allItems))
-		}
-	})
-
-	t.Run("GetKeys", func(t *testing.T) {
-		kv.Set("key1", json.RawMessage(`"value1"`))
-		kv.Set("key2", json.RawMessage(`"value2"`))
-
-		keys := kv.GetKeys()
-
-		if len(keys) != 2 {
-			t.Errorf("Expected 2 keys, got %d", len(keys))
-		}
-
-		expectedKeys := map[string]bool{"key1": true, "key2": true}
-		for _, key := range keys {
-			if !expectedKeys[key] {
-				t.Errorf("Unexpected key: %s", key)
-			}
-		}
-	})
-
-	t.Run("GetValues", func(t *testing.T) {
-		err := kv.ClearAll()
-		if err != nil {
-			log.Printf("Failed to clear all items: %v", err)
-		}
-
-		kv.Set("key1", json.RawMessage(`"value1"`))
-		kv.Set("key2", json.RawMessage(`"value2"`))
-
-		values := kv.GetValues()
-
-		if len(values) != 2 {
-			t.Errorf("Expected 2 values, got %d", len(values))
-		}
-
-		expectedValues := map[string]bool{`"value1"`: true, `"value2"`: true}
-		for _, value := range values {
-			if !expectedValues[string(value)] {
-				t.Errorf("Unexpected value: %s", string(value))
-			}
 		}
 	})
 }

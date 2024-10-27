@@ -36,13 +36,13 @@ func (kv *KeyValueStore) TakeSnapshot() error {
 	snapshotFileName := fmt.Sprintf("snapshot_%s.json", snapshot.Timestamp.Format("20060102150405"))
 	snapshotFile := filepath.Join(filepath.Dir(kv.logger.filename), snapshotFileName)
 
-	if err := os.WriteFile(snapshotFile, snapshotData, 0600); err != nil {
-		return fmt.Errorf("failed to write snapshot file: %w", err)
+	if writeFileErr := os.WriteFile(snapshotFile, snapshotData, 0600); writeFileErr != nil {
+		return fmt.Errorf("failed to write snapshot file: %w", writeFileErr)
 	}
 
 	// Truncate the transaction log
-	if err := kv.logger.ClearLogs(); err != nil {
-		return fmt.Errorf("failed to clear transaction logs: %w", err)
+	if clearLogsErr := kv.logger.ClearLogs(); clearLogsErr != nil {
+		return fmt.Errorf("failed to clear transaction logs: %w", clearLogsErr)
 	}
 
 	return nil
@@ -50,9 +50,9 @@ func (kv *KeyValueStore) TakeSnapshot() error {
 
 func (kv *KeyValueStore) LoadLatestSnapshot() error {
 	snapshotDir := filepath.Dir(kv.logger.filename)
-	snapshots, err := filepath.Glob(filepath.Join(snapshotDir, "snapshot_*.json"))
-	if err != nil {
-		return fmt.Errorf("failed to list snapshot files: %w", err)
+	snapshots, listSnapshotErr := filepath.Glob(filepath.Join(snapshotDir, "snapshot_*.json"))
+	if listSnapshotErr != nil {
+		return fmt.Errorf("failed to list snapshot files: %w", listSnapshotErr)
 	}
 
 	if len(snapshots) == 0 {
@@ -60,14 +60,14 @@ func (kv *KeyValueStore) LoadLatestSnapshot() error {
 	}
 
 	latestSnapshot := snapshots[len(snapshots)-1]
-	snapshotData, err := os.ReadFile(latestSnapshot)
-	if err != nil {
-		return fmt.Errorf("failed to read snapshot file: %w", err)
+	snapshotData, readSnapshotErr := os.ReadFile(latestSnapshot)
+	if readSnapshotErr != nil {
+		return fmt.Errorf("failed to read snapshot file: %w", readSnapshotErr)
 	}
 
 	var snapshot Snapshot
-	if err := json.Unmarshal(snapshotData, &snapshot); err != nil {
-		return fmt.Errorf("failed to unmarshal snapshot: %w", err)
+	if unmarshalErr := json.Unmarshal(snapshotData, &snapshot); unmarshalErr != nil {
+		return fmt.Errorf("failed to unmarshal snapshot: %w", unmarshalErr)
 	}
 
 	kv.mu.Lock()
