@@ -212,7 +212,7 @@ func StartServer(enableLogging bool) {
 	kv := NewKeyValueStore()
 
 	if enableLogging {
-		err := kv.InitLogging("C:/repos/herd/logs/transaction.log", 1*time.Hour)
+		err := kv.InitLogging("/app/log/transaction.log", 1*time.Hour)
 		if err != nil {
 			log.Fatalf("Failed to create KeyValueStore: %v", err)
 		}
