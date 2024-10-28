@@ -19,7 +19,7 @@ RUN go mod download
 COPY . ./
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /kvs
+RUN CGO_ENABLED=0 GOOS=linux go build -o /herd
 
 # --- DEPLOY STAGE ---
 # Deploy the application binary into a lean image
@@ -30,10 +30,10 @@ WORKDIR /
 # Copy the log directory from build stage
 COPY --from=build-stage /app/log /app/log
 
-COPY --from=build-stage /kvs /kvs
+COPY --from=build-stage /herd /herd
 
 EXPOSE 8080
 
 USER root:root
 
-ENTRYPOINT ["/kvs"]
+ENTRYPOINT ["/herd"]
