@@ -118,6 +118,18 @@ func handleSet(kv *KeyValueStore) gin.HandlerFunc {
 			return
 		}
 
+		// Check if empty key
+		if req.Key == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"message": "Key parameter is missing"})
+			return
+		}
+
+		// Check if empty value
+		if req.Value == nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"message": "Value parameter is missing"})
+			return
+		}
+
 		// Add to kv storage
 		kv.Set(req.Key, req.Value)
 
