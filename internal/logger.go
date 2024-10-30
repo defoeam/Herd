@@ -13,16 +13,16 @@ import (
 
 // LogEntry represents a log entry.
 type LogEntry struct {
-	Timestamp time.Time
-	Operation string
-	Key       string
-	Value     string
+	Timestamp time.Time `json:"timestamp"`
+	Operation string    `json:"operation"`
+	Key       string    `json:"key"`
+	Value     string    `json:"value"`
 }
 
 // Logger is a simple logger that writes to a file.
 type Logger struct {
 	filename string
-	mu       sync.Mutex
+	mu       sync.RWMutex
 }
 
 // NewLogger creates a new logger that writes to the specified file.
@@ -59,14 +59,6 @@ func (l *Logger) WriteLog(entry LogEntry) {
 	if _, writeErr := file.WriteString(logLine); writeErr != nil {
 		log.Printf("Error writing to log file: %v", writeErr)
 	}
-}
-
-// ReadLogs reads all log entries from the file.
-func (l *Logger) ReadLogs() ([]LogEntry, error) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-
-	return l.readLogsUnsafe()
 }
 
 func parseLogLine(line string) (LogEntry, error) {
@@ -107,8 +99,11 @@ func parseLogLine(line string) (LogEntry, error) {
 	}, nil
 }
 
-// readLogsUnsafe reads log entries without locking the mutex.
-func (l *Logger) readLogsUnsafe() ([]LogEntry, error) {
+// ReadLogs reads all log entries from the file.
+func (l *Logger) ReadLogs() ([]LogEntry, error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	file, err := os.Open(l.filename)
 	if err != nil {
 		return nil, err
