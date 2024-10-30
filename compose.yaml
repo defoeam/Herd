@@ -1,9 +1,14 @@
 ---
-name: keyvalue
+name: herd
 services:
   server:
     container_name: ${CONTAINER_NAME:-server}
     build:
       context: .
     ports:
-    - 8080:8080
+      - 8080:8080
+    volumes:
+    - log:/app/log
+
+volumes:
+  log:
