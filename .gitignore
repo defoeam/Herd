@@ -1,3 +1,6 @@
 .vscode/
 .dist/
 logs/** 
+
+# Ignore private key
+certs/server.key

@@ -1,9 +1,13 @@
 package main
 
 import (
+	"log"
+
 	kvs "github.com/defoeam/herd/internal"
 )
 
 func main() {
-	kvs.StartServer(true)
+	if err := kvs.StartGRPCServer(true); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }

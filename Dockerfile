@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # --- BUILD STAGE ---
-FROM golang:1.21 AS build-stage
+FROM golang:1.23 AS build-stage
 
 # Set destination for COPY
 WORKDIR /app
@@ -30,9 +30,12 @@ WORKDIR /
 # Copy the log directory from build stage
 COPY --from=build-stage /app/log /app/log
 
+# Copy the certificate from build stage
+COPY --from=build-stage /app/certs /app/certs
+
 COPY --from=build-stage /herd /herd
 
-EXPOSE 8080
+EXPOSE 50051
 
 USER root:root
 

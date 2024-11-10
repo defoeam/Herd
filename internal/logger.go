@@ -42,6 +42,7 @@ func (l *Logger) WriteLog(entry LogEntry) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
+	// Open the log file for appending
 	file, err := os.OpenFile(l.filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Printf("Error opening log file: %v", err)
@@ -49,6 +50,7 @@ func (l *Logger) WriteLog(entry LogEntry) {
 	}
 	defer file.Close()
 
+	// Format the log entry
 	logLine := fmt.Sprintf("[%s] %s - Key: %s, Value: %s\n",
 		entry.Timestamp.Format(time.RFC3339),
 		entry.Operation,
@@ -61,27 +63,32 @@ func (l *Logger) WriteLog(entry LogEntry) {
 	}
 }
 
+// parseLogLine parses a log line into a LogEntry struct.
 func parseLogLine(line string) (LogEntry, error) {
 	const (
 		splitParts        = 2
 		keyValueSeparator = ", "
 	)
 
+	// Split the log line into timestamp and operation/key-value parts
 	parts := strings.SplitN(line, "] ", splitParts)
 	if len(parts) != splitParts {
 		return LogEntry{}, errors.New("invalid log line format")
 	}
 
+	// Parse the timestamp
 	timestamp, err := time.Parse(time.RFC3339, strings.Trim(parts[0], "[]"))
 	if err != nil {
 		return LogEntry{}, err
 	}
 
+	// Parse the operation and key-value parts
 	operationParts := strings.SplitN(parts[1], " - ", splitParts)
 	if len(operationParts) != splitParts {
 		return LogEntry{}, errors.New("invalid log line format (operation)")
 	}
 
+	// Parse the key and value
 	operation := operationParts[0]
 	keyValue := strings.SplitN(operationParts[1], keyValueSeparator, splitParts)
 	if len(keyValue) != splitParts {
@@ -104,12 +111,14 @@ func (l *Logger) ReadLogs() ([]LogEntry, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
+	// Open the log file for reading
 	file, err := os.Open(l.filename)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
+	// Read each line from the file and parse it into a LogEntry
 	var entries []LogEntry
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {

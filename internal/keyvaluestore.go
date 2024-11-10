@@ -106,6 +106,17 @@ func (kv *KeyValueStore) Get(key string) (json.RawMessage, bool) {
 	defer kv.mu.RUnlock()
 
 	val, ok := kv.data[key]
+
+	// Write log entry
+	if kv.logger != nil {
+		kv.logger.WriteLog(LogEntry{
+			Timestamp: time.Now(),
+			Operation: "GET",
+			Key:       key,
+			Value:     string(val),
+		})
+	}
+
 	return val, ok
 }
 
