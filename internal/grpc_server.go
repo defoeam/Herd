@@ -7,8 +7,6 @@ import (
 	"net"
 	"time"
 
-	"google.golang.org/grpc/credentials"
-
 	pb "github.com/defoeam/herd/api/proto"
 	"google.golang.org/grpc"
 )
@@ -124,13 +122,7 @@ func StartGRPCServer(enableLogging bool) error {
 		}
 	}
 
-	// Load TLS credentials
-	creds, err := credentials.NewServerTLSFromFile("/app/certs/server.crt", "/app/certs/server.key")
-	if err != nil {
-		return fmt.Errorf("failed to load TLS credentials: %v", err)
-	}
-
-	s := grpc.NewServer(grpc.Creds(creds))
+	s := grpc.NewServer()
 
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
@@ -138,7 +130,7 @@ func StartGRPCServer(enableLogging bool) error {
 	}
 
 	pb.RegisterKeyValueServiceServer(s, server)
-	log.Printf("Starting secured gRPC server on :50051")
+	log.Printf("Starting unsecured gRPC server on :50051")
 	if err := s.Serve(lis); err != nil {
 		return fmt.Errorf("failed to serve: %v", err)
 	}
