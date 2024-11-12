@@ -108,12 +108,6 @@ func (s *GRPCServer) DeleteAll(ctx context.Context, req *pb.DeleteAllRequest) (*
 
 // StartGRPCServer starts a gRPC server on port 50051.
 // If enableLogging is true, it initializes logging to the specified file with a rotation interval of 1 hour.
-//
-// Parameters:
-//   - enableLogging: A boolean flag to enable or disable logging.
-//
-// Returns:
-//   - error: An error if the server fails to start, initialize logging, or listen on the specified port.
 func StartGRPCServer(enableLogging bool) error {
 	server := NewGRPCServer()
 	if enableLogging {

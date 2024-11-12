@@ -19,7 +19,7 @@ RUN go mod download
 COPY . ./
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /herd
+RUN CGO_ENABLED=0 GOOS=linux go build -o /herd ./cmd/main.go
 
 # --- DEPLOY STAGE ---
 # Deploy the application binary into a lean image
@@ -29,9 +29,6 @@ WORKDIR /
 
 # Copy the log directory from build stage
 COPY --from=build-stage /app/log /app/log
-
-# Copy the certificate from build stage
-COPY --from=build-stage /app/certs /app/certs
 
 COPY --from=build-stage /herd /herd
 
