@@ -107,6 +107,8 @@ func (kv *KeyValueStore) Get(key string) (json.RawMessage, bool) {
 
 	val, ok := kv.data[key]
 
+	log.Printf("Get \"%s\" from kvs", key)
+
 	// Write log entry
 	if kv.logger != nil {
 		kv.logger.WriteLog(LogEntry{
@@ -183,6 +185,8 @@ func (kv *KeyValueStore) Clear(key string) ([]byte, bool) {
 
 	deletedVal, ok := kv.data[key]
 	delete(kv.data, key)
+
+	log.Printf("Cleared \"%s\" from kvs", key)
 
 	if kv.logger != nil {
 		kv.logger.WriteLog(LogEntry{
