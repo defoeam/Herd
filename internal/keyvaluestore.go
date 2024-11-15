@@ -89,7 +89,7 @@ func (kv *KeyValueStore) Set(key string, value json.RawMessage) {
 
 	// Set value in store
 	kv.data[key] = value
-	log.Printf("Set \"%s\" to %s", key, value)
+	log.Printf("Set \"%s\" to \"%s\"", key, value)
 }
 
 // Get retrieves the value associated with a key from the store.
