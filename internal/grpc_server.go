@@ -85,7 +85,7 @@ func (s *GRPCServer) Set(ctx context.Context, req *pb.SetRequest) (*pb.SetRespon
 
 // Delete deletes an item in the key-value store by key.
 func (s *GRPCServer) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.DeleteResponse, error) {
-	value, ok := s.kv.Clear(req.Key)
+	value, ok := s.kv.Delete(req.Key)
 	if !ok {
 		return nil, fmt.Errorf("key not found: %s", req.Key)
 	}
@@ -100,7 +100,7 @@ func (s *GRPCServer) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.Del
 
 // DeleteAll deletes all items in the key-value store.
 func (s *GRPCServer) DeleteAll(ctx context.Context, req *pb.DeleteAllRequest) (*pb.DeleteAllResponse, error) {
-	if err := s.kv.ClearAll(); err != nil {
+	if err := s.kv.DeleteALL(); err != nil {
 		return nil, fmt.Errorf("failed to clear all items: %v", err)
 	}
 	return &pb.DeleteAllResponse{}, nil
