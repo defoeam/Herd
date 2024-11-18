@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package keyvaluestore;
+
+option go_package = "github.com/defoeam/herd/proto";
+
+// KeyValue represents a key-value pair
+message KeyValue {
+  string key = 1;
+  bytes value = 2;
+}
+
+// GetRequest represents a request to get a value by key
+message GetRequest {
+  string key = 1;
+}
+
+// Request message for retrieving all keys from the key-value store.
+message GetKeysRequest {}
+
+// Response message containing a list of keys from the key-value store.
+message GetKeysResponse {
+  // A list of keys.
+  repeated string keys = 1;
+}
+
+// Request message for retrieving all values from the key-value store.
+message GetValuesRequest {}
+
+// Response message containing a list of values from the key-value store.
+message GetValuesResponse {
+  repeated bytes values = 1;
+}
+
+// GetAllRequest represents a request to get all key-value pairs
+message GetAllRequest {}
+
+// GetAllResponse represents a response containing multiple key-value pairs
+message GetAllResponse {
+  repeated KeyValue items = 1;
+}
+
+// SetRequest represents a request to set a key-value pair
+message SetRequest {
+  string key = 1;
+  bytes value = 2;
+}
+
+// SetResponse represents a response after setting a key-value pair
+message SetResponse {
+  KeyValue item = 1;
+}
+
+// DeleteRequest represents a request to delete a value by key
+message DeleteRequest {
+  string key = 1;
+}
+
+// DeleteResponse represents a response after deleting a key-value pair
+message DeleteResponse {
+  KeyValue deleted_item = 1;
+}
+
+// DeleteAllRequest represents a request to delete all key-value pairs
+message DeleteAllRequest {}
+
+// DeleteAllResponse represents a response after deleting all key-value pairs
+message DeleteAllResponse {}
+
+// KeyValueService defines the gRPC service
+service KeyValueService {
+  rpc Get(GetRequest) returns (KeyValue);
+  rpc GetAll(GetAllRequest) returns (GetAllResponse);
+  rpc GetKeys(GetKeysRequest) returns (GetKeysResponse);
+  rpc GetValues(GetValuesRequest) returns (GetValuesResponse);
+  rpc Set(SetRequest) returns (SetResponse);
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
+  rpc DeleteAll(DeleteAllRequest) returns (DeleteAllResponse);
+}

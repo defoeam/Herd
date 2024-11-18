@@ -53,7 +53,7 @@ func TestGetKeysValues(t *testing.T) {
 
 	t.Run("GetKeys", func(t *testing.T) {
 		// clear all items to prep for test
-		err := kv.ClearAll()
+		err := kv.DeleteALL()
 		if err != nil {
 			log.Printf("Failed to clear all items: %v", err)
 		}
@@ -78,7 +78,7 @@ func TestGetKeysValues(t *testing.T) {
 
 	t.Run("GetValues", func(t *testing.T) {
 		// clear all items to prep for test
-		err := kv.ClearAll()
+		err := kv.DeleteALL()
 		if err != nil {
 			log.Printf("Failed to clear all items: %v", err)
 		}
@@ -112,7 +112,7 @@ func TestClear(t *testing.T) {
 
 		kv.Set(key, value)
 
-		clearedValue, ok := kv.Clear(key)
+		clearedValue, ok := kv.Delete(key)
 		if !ok {
 			t.Errorf("Failed to clear key %s", key)
 		}
@@ -131,7 +131,7 @@ func TestClear(t *testing.T) {
 		kv.Set("key1", json.RawMessage(`"value1"`))
 		kv.Set("key2", json.RawMessage(`"value2"`))
 
-		if err := kv.ClearAll(); err != nil {
+		if err := kv.DeleteALL(); err != nil {
 			// Handle the error appropriately
 			log.Printf("Failed to clear all items: %v", err)
 		}

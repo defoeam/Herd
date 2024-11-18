@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # --- BUILD STAGE ---
-FROM golang:1.21 AS build-stage
+FROM golang:1.23 AS build-stage
 
 # Set destination for COPY
 WORKDIR /app
@@ -19,7 +19,7 @@ RUN go mod download
 COPY . ./
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /herd
+RUN CGO_ENABLED=0 GOOS=linux go build -o /herd ./cmd/main.go
 
 # --- DEPLOY STAGE ---
 # Deploy the application binary into a lean image
@@ -32,7 +32,7 @@ COPY --from=build-stage /app/log /app/log
 
 COPY --from=build-stage /herd /herd
 
-EXPOSE 8080
+EXPOSE 50051
 
 USER root:root
 
