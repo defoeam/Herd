@@ -7,12 +7,12 @@ import (
 	"net"
 	"time"
 
-	pb "github.com/defoeam/herd/api/proto"
+	"github.com/defoeam/herd/api/proto"
 	"google.golang.org/grpc"
 )
 
 type GRPCServer struct {
-	pb.UnimplementedKeyValueServiceServer
+	proto.UnimplementedKeyValueServiceServer
 	kv *KeyValueStore
 }
 
@@ -24,59 +24,59 @@ func NewGRPCServer() *GRPCServer {
 }
 
 // Get returns an item in the key-value store by key.
-func (s *GRPCServer) Get(_ context.Context, req *pb.GetRequest) (*pb.KeyValue, error) {
+func (s *GRPCServer) Get(_ context.Context, req *proto.GetRequest) (*proto.KeyValue, error) {
 	value, ok := s.kv.Get(req.GetKey())
 	if !ok {
 		return nil, fmt.Errorf("key not found: %s", req.GetKey())
 	}
 
-	return &pb.KeyValue{
+	return &proto.KeyValue{
 		Key:   req.GetKey(),
 		Value: value,
 	}, nil
 }
 
 // GetAll returns all items in the key-value store.
-func (s *GRPCServer) GetAll(_ context.Context, _ *pb.GetAllRequest) (*pb.GetAllResponse, error) {
+func (s *GRPCServer) GetAll(_ context.Context, _ *proto.GetAllRequest) (*proto.GetAllResponse, error) {
 	data := s.kv.GetAll()
-	items := make([]*pb.KeyValue, 0, len(data))
+	items := make([]*proto.KeyValue, 0, len(data))
 
 	for k, v := range data {
-		items = append(items, &pb.KeyValue{
+		items = append(items, &proto.KeyValue{
 			Key:   k,
 			Value: v,
 		})
 	}
 
-	return &pb.GetAllResponse{Items: items}, nil
+	return &proto.GetAllResponse{Items: items}, nil
 }
 
 // GetKeys returns all keys in the key-value store.
-func (s *GRPCServer) GetKeys(_ context.Context, _ *pb.GetKeysRequest) (*pb.GetKeysResponse, error) {
+func (s *GRPCServer) GetKeys(_ context.Context, _ *proto.GetKeysRequest) (*proto.GetKeysResponse, error) {
 	keys := s.kv.GetKeys()
-	return &pb.GetKeysResponse{
+	return &proto.GetKeysResponse{
 		Keys: keys,
 	}, nil
 }
 
 // GetValues returns all values in the key-value store.
-func (s *GRPCServer) GetValues(_ context.Context, _ *pb.GetValuesRequest) (*pb.GetValuesResponse, error) {
+func (s *GRPCServer) GetValues(_ context.Context, _ *proto.GetValuesRequest) (*proto.GetValuesResponse, error) {
 	values := s.kv.GetValues()
 	byteValues := make([][]byte, len(values))
 	for i, v := range values {
 		byteValues[i] = []byte(v)
 	}
-	return &pb.GetValuesResponse{
+	return &proto.GetValuesResponse{
 		Values: byteValues,
 	}, nil
 }
 
 // Set sets an item in the key-value store by key and value.
-func (s *GRPCServer) Set(_ context.Context, req *pb.SetRequest) (*pb.SetResponse, error) {
+func (s *GRPCServer) Set(_ context.Context, req *proto.SetRequest) (*proto.SetResponse, error) {
 	s.kv.Set(req.GetKey(), req.GetValue())
 
-	return &pb.SetResponse{
-		Item: &pb.KeyValue{
+	return &proto.SetResponse{
+		Item: &proto.KeyValue{
 			Key:   req.GetKey(),
 			Value: req.GetValue(),
 		},
@@ -84,14 +84,14 @@ func (s *GRPCServer) Set(_ context.Context, req *pb.SetRequest) (*pb.SetResponse
 }
 
 // Delete deletes an item in the key-value store by key.
-func (s *GRPCServer) Delete(_ context.Context, req *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+func (s *GRPCServer) Delete(_ context.Context, req *proto.DeleteRequest) (*proto.DeleteResponse, error) {
 	value, ok := s.kv.Delete(req.GetKey())
 	if !ok {
 		return nil, fmt.Errorf("key not found: %s", req.GetKey())
 	}
 
-	return &pb.DeleteResponse{
-		DeletedItem: &pb.KeyValue{
+	return &proto.DeleteResponse{
+		DeletedItem: &proto.KeyValue{
 			Key:   req.GetKey(),
 			Value: value,
 		},
@@ -99,11 +99,11 @@ func (s *GRPCServer) Delete(_ context.Context, req *pb.DeleteRequest) (*pb.Delet
 }
 
 // DeleteAll deletes all items in the key-value store.
-func (s *GRPCServer) DeleteAll(_ context.Context, _ *pb.DeleteAllRequest) (*pb.DeleteAllResponse, error) {
+func (s *GRPCServer) DeleteAll(_ context.Context, _ *proto.DeleteAllRequest) (*proto.DeleteAllResponse, error) {
 	if err := s.kv.DeleteALL(); err != nil {
 		return nil, fmt.Errorf("failed to clear all items: %w", err)
 	}
-	return &pb.DeleteAllResponse{}, nil
+	return &proto.DeleteAllResponse{}, nil
 }
 
 // StartGRPCServer starts a gRPC server on port 50051.
@@ -123,7 +123,7 @@ func StartGRPCServer(enableLogging bool) error {
 		return fmt.Errorf("failed to listen: %w", listenErr)
 	}
 
-	pb.RegisterKeyValueServiceServer(s, server)
+	proto.RegisterKeyValueServiceServer(s, server)
 	log.Printf("Starting unsecured gRPC server on :50051")
 	if serveErr := s.Serve(lis); serveErr != nil {
 		return fmt.Errorf("failed to serve: %w", serveErr)
