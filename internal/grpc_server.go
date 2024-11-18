@@ -37,7 +37,7 @@ func (s *GRPCServer) Get(_ context.Context, req *pb.GetRequest) (*pb.KeyValue, e
 }
 
 // GetAll returns all items in the key-value store.
-func (s *GRPCServer) GetAll(_ context.Context, req *pb.GetAllRequest) (*pb.GetAllResponse, error) {
+func (s *GRPCServer) GetAll(_ context.Context, _ *pb.GetAllRequest) (*pb.GetAllResponse, error) {
 	data := s.kv.GetAll()
 	items := make([]*pb.KeyValue, 0, len(data))
 
@@ -52,7 +52,7 @@ func (s *GRPCServer) GetAll(_ context.Context, req *pb.GetAllRequest) (*pb.GetAl
 }
 
 // GetKeys returns all keys in the key-value store.
-func (s *GRPCServer) GetKeys(_ context.Context, req *pb.GetKeysRequest) (*pb.GetKeysResponse, error) {
+func (s *GRPCServer) GetKeys(_ context.Context, _ *pb.GetKeysRequest) (*pb.GetKeysResponse, error) {
 	keys := s.kv.GetKeys()
 	return &pb.GetKeysResponse{
 		Keys: keys,
@@ -60,7 +60,7 @@ func (s *GRPCServer) GetKeys(_ context.Context, req *pb.GetKeysRequest) (*pb.Get
 }
 
 // GetValues returns all values in the key-value store.
-func (s *GRPCServer) GetValues(_ context.Context, req *pb.GetValuesRequest) (*pb.GetValuesResponse, error) {
+func (s *GRPCServer) GetValues(_ context.Context, _ *pb.GetValuesRequest) (*pb.GetValuesResponse, error) {
 	values := s.kv.GetValues()
 	byteValues := make([][]byte, len(values))
 	for i, v := range values {
@@ -99,7 +99,7 @@ func (s *GRPCServer) Delete(_ context.Context, req *pb.DeleteRequest) (*pb.Delet
 }
 
 // DeleteAll deletes all items in the key-value store.
-func (s *GRPCServer) DeleteAll(_ context.Context, req *pb.DeleteAllRequest) (*pb.DeleteAllResponse, error) {
+func (s *GRPCServer) DeleteAll(_ context.Context, _ *pb.DeleteAllRequest) (*pb.DeleteAllResponse, error) {
 	if err := s.kv.DeleteALL(); err != nil {
 		return nil, fmt.Errorf("failed to clear all items: %w", err)
 	}
