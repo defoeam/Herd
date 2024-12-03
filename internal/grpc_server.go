@@ -2,13 +2,17 @@ package keyvaluestore
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	"github.com/defoeam/herd/api/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 type GRPCServer struct {
@@ -109,6 +113,9 @@ func (s *GRPCServer) DeleteAll(_ context.Context, _ *proto.DeleteAllRequest) (*p
 // StartGRPCServer starts a gRPC server on port 50051.
 // If enableLogging is true, it initializes logging to the specified file with a rotation interval of 1 hour.
 func StartGRPCServer(enableLogging bool) error {
+	log.Printf("Starting server on port 7878...")
+
+	// initialize the keyvalue store and logging
 	server := NewGRPCServer()
 	if enableLogging {
 		if err := server.kv.InitLogging("/app/log/transaction.log", 1*time.Hour); err != nil {
@@ -116,16 +123,43 @@ func StartGRPCServer(enableLogging bool) error {
 		}
 	}
 
-	s := grpc.NewServer()
+	// load the server's certificate and private key
+	cert, certPairErr := tls.LoadX509KeyPair("certs/server.crt", "certs/server.key")
+	if certPairErr != nil {
+		return fmt.Errorf("failed to load X509 key pair: %w", certPairErr)
+	}
 
-	lis, listenErr := net.Listen("tcp", "127.0.0.1:50051")
+	// setup and load the CA's certificate
+	ca := x509.NewCertPool()
+	caFilePath := "certs/ca.crt"
+	caBytes, caBytesErr := os.ReadFile(caFilePath)
+	if caBytesErr != nil {
+		return fmt.Errorf("failed to read CA certificate: %w", caBytesErr)
+	}
+	if ok := ca.AppendCertsFromPEM(caBytes); !ok {
+		return fmt.Errorf("failed to append CA certificate")
+	}
+
+	// create a new TLS configuration with the server's certificate and the CA's certificate
+	tlsConfig := &tls.Config{
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		Certificates: []tls.Certificate{cert},
+		ClientCAs:    ca,
+	}
+
+	// create a new gRPC server with the TLS configuration
+	s := grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig)))
+	proto.RegisterKeyValueServiceServer(s, server)
+
+	// setup listener
+	lis, listenErr := net.Listen("tcp", "0.0.0.0:7878")
 	if listenErr != nil {
 		return fmt.Errorf("failed to listen: %w", listenErr)
 	}
 
-	proto.RegisterKeyValueServiceServer(s, server)
-	log.Printf("Starting unsecured gRPC server on :50051")
-	if serveErr := s.Serve(lis); serveErr != nil {
+	// serve the gRPC server
+	serveErr := s.Serve(lis)
+	if serveErr != nil {
 		return fmt.Errorf("failed to serve: %w", serveErr)
 	}
 	return nil

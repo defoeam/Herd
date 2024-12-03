@@ -6,7 +6,7 @@ services:
     build:
       context: .
     ports:
-      - 50051:50051
+    - 7878:7878
     volumes:
     - log:/app/log
 

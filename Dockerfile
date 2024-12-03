@@ -30,9 +30,13 @@ WORKDIR /
 # Copy the log directory from build stage
 COPY --from=build-stage /app/log /app/log
 
+# Copy the certs directory from build stage
+COPY --from=build-stage /app/certs /certs
+
+# Copy the binary from build stage
 COPY --from=build-stage /herd /herd
 
-EXPOSE 50051
+EXPOSE 7878
 
 USER root:root
 
