@@ -224,7 +224,7 @@ func (kv *KeyValueStore) snapshotScheduler() {
 // Quick log entry utility function.
 func (kv *KeyValueStore) quickLog(operation string, key string, value string) {
 	if kv.logger != nil {
-		kv.logger.WriteLog(LogEntry{
+		go kv.logger.WriteLog(LogEntry{
 			Timestamp: time.Now(),
 			Operation: operation,
 			Key:       key,
