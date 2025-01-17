@@ -41,8 +41,8 @@ ENV USE_SECURITY=${useSecurity}
 # Copy the log directory from build stage
 COPY --from=build-stage /app/log /app/log
 
-# Copy the certs directory from build stage
-COPY --from=build-stage /app/certs /certs
+# Copy the certs directory from build stage if it exists
+RUN if [ -d /app/certs ]; then cp -r /app/certs /certs; fi
 
 # Copy the binary from build stage
 COPY --from=build-stage /herd /herd
