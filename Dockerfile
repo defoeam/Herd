@@ -3,6 +3,10 @@
 # --- BUILD STAGE ---
 FROM golang:1.23 AS build-stage
 
+# Accept build arguments with default values
+ARG useLogging=false
+ARG useSecurity=false
+
 # Set destination for COPY
 WORKDIR /app
 
@@ -22,10 +26,17 @@ COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o /herd ./cmd/main.go
 
 # --- DEPLOY STAGE ---
-# Deploy the application binary into a lean image
-FROM gcr.io/distroless/base-debian11 AS build-release-stage
+FROM alpine:3.14 AS build-release-stage
 
 WORKDIR /
+
+# Accept build arguments in deploy stage
+ARG useLogging
+ARG useSecurity
+
+# Set environment variables to pass to the application
+ENV USE_LOGGING=${useLogging}
+ENV USE_SECURITY=${useSecurity}
 
 # Copy the log directory from build stage
 COPY --from=build-stage /app/log /app/log
@@ -40,4 +51,4 @@ EXPOSE 7878
 
 USER root:root
 
-ENTRYPOINT ["/herd"]
+ENTRYPOINT ["/bin/sh", "-c", "/herd --useLogging=${USE_LOGGING} --useSecurity=${USE_SECURITY}"]

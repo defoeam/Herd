@@ -112,7 +112,7 @@ func (s *GRPCServer) DeleteAll(_ context.Context, _ *proto.DeleteAllRequest) (*p
 
 // StartGRPCServer starts a gRPC server on port 50051.
 // If enableLogging is true, it initializes logging to the specified file with a rotation interval of 1 hour.
-func StartGRPCServer(enableLogging bool) error {
+func StartGRPCServer(enableLogging bool, enableSecurity bool) error {
 	log.Printf("Starting server on port 7878...")
 
 	// initialize the keyvalue store and logging
@@ -123,32 +123,13 @@ func StartGRPCServer(enableLogging bool) error {
 		}
 	}
 
-	// load the server's certificate and private key
-	cert, certPairErr := tls.LoadX509KeyPair("certs/server.crt", "certs/server.key")
-	if certPairErr != nil {
-		return fmt.Errorf("failed to load X509 key pair: %w", certPairErr)
+	// create a new gRPC server with or without tls
+	s, serverFactoryErr := grpcServerFactory(enableSecurity)
+	if serverFactoryErr != nil {
+		return fmt.Errorf("failed to create server: %w", serverFactoryErr)
 	}
 
-	// setup and load the CA's certificate
-	ca := x509.NewCertPool()
-	caFilePath := "certs/ca.crt"
-	caBytes, caBytesErr := os.ReadFile(caFilePath)
-	if caBytesErr != nil {
-		return fmt.Errorf("failed to read CA certificate: %w", caBytesErr)
-	}
-	if ok := ca.AppendCertsFromPEM(caBytes); !ok {
-		return fmt.Errorf("failed to append CA certificate")
-	}
-
-	// create a new TLS configuration with the server's certificate and the CA's certificate
-	tlsConfig := &tls.Config{
-		ClientAuth:   tls.RequireAndVerifyClientCert,
-		Certificates: []tls.Certificate{cert},
-		ClientCAs:    ca,
-	}
-
-	// create a new gRPC server with the TLS configuration
-	s := grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig)))
+	// register the KeyValueService server
 	proto.RegisterKeyValueServiceServer(s, server)
 
 	// setup listener
@@ -163,4 +144,38 @@ func StartGRPCServer(enableLogging bool) error {
 		return fmt.Errorf("failed to serve: %w", serveErr)
 	}
 	return nil
+}
+
+// grpcServerFactory creates a new gRPC server with or without security enabled.
+func grpcServerFactory(enableSecurity bool) (*grpc.Server, error) {
+	if enableSecurity {
+		// load the server's certificate and private key
+		cert, certPairErr := tls.LoadX509KeyPair("certs/server.crt", "certs/server.key")
+		if certPairErr != nil {
+			return nil, fmt.Errorf("failed to load X509 key pair: %w", certPairErr)
+		}
+
+		// setup and load the CA's certificate
+		ca := x509.NewCertPool()
+		caFilePath := "certs/ca.crt"
+		caBytes, caBytesErr := os.ReadFile(caFilePath)
+		if caBytesErr != nil {
+			return nil, fmt.Errorf("failed to read CA certificate: %w", caBytesErr)
+		}
+		if ok := ca.AppendCertsFromPEM(caBytes); !ok {
+			return nil, fmt.Errorf("failed to append CA certificate")
+		}
+
+		// create a new TLS configuration with the server's certificate and the CA's certificate
+		tlsConfig := &tls.Config{
+			ClientAuth:   tls.RequireAndVerifyClientCert,
+			Certificates: []tls.Certificate{cert},
+			ClientCAs:    ca,
+		}
+
+		// create a new gRPC server with the TLS configuration
+		return grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig))), nil
+	} else {
+		return grpc.NewServer(), nil
+	}
 }
