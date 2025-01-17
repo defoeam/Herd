@@ -175,7 +175,7 @@ func grpcServerFactory(enableSecurity bool) (*grpc.Server, error) {
 
 		// create a new gRPC server with the TLS configuration
 		return grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig))), nil
-	} else {
-		return grpc.NewServer(), nil
 	}
+
+	return grpc.NewServer(), nil
 }
