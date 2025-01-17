@@ -5,10 +5,13 @@ services:
     container_name: ${CONTAINER_NAME:-server}
     build:
       context: .
+      args:
+        useLogging: ${USE_LOGGING:-true}
+        useSecurity: ${USE_SECURITY:-true}
     ports:
-      - 50051:50051
+      - "7878:7878"
     volumes:
-    - log:/app/log
+      - log:/app/log
 
 volumes:
   log:
