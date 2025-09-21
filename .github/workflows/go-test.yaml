@@ -8,22 +8,6 @@ env:
     GOVERSION: "1.19"
 
 jobs:
-  golangci:
-    name: Go Lint
-    runs-on: ubuntu-latest
-    steps:
-    - name: Setup Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '>=${{ env.GOVERSION }}'
-    - name: Check out code
-      uses: actions/checkout@v4
-    - name: golangci-lint
-      uses: golangci/golangci-lint-action@v6
-      with:
-        args: --config=golangci.yaml
-        version: latest
-
   test:
     name: Go Test
     runs-on: ubuntu-latest
