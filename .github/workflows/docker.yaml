@@ -2,9 +2,8 @@
 name: Docker
 
 on:
-  push:
-    branches:
-    - "main"
+  release:
+    types: [published]
 
 env:
   REGISTRY: ghcr.io
@@ -34,8 +33,8 @@ jobs:
     - name: Show Release Information
       run: |-
         echo "Available Docker Buildx Platforms: ${{ steps.buildx.outputs.platforms }}"
-        echo "ref_type: ${{ github.ref_type}}"
-        echo "head_ref: ${{ github.head_ref}}"
+        echo "Release tag: ${{ github.ref_name }}"
+        echo "Release name: ${{ github.event.release.name }}"
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
@@ -52,11 +51,10 @@ jobs:
         # https://github.com/opencontainers/image-spec/blob/main/annotations.md
         labels: |
             org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ github.ref_name }}
         # https://github.com/docker/metadata-action
         tags: |
-            type=raw,value=latest
-            type=sha,prefix=,suffix=,format=long
-            type=ref,event=pr
+            type=semver,pattern={{version}}
 
     - name: Build and Push Docker Image
       id: build-and-push
